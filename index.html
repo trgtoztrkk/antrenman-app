@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Antrenman Takip</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #fafafa; -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+  <!-- BİLDİRİM TOAST -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xl transition-all duration-300"></div>
+
+  <!-- GİRİŞ / KAYIT EKRANI -->
+  <div id="auth-screen" class="flex-1 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 mb-3 border border-emerald-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-white">Antrenman Pro</h1>
+        <p class="text-sm text-zinc-400 mt-1">Kendi programını oluştur, salonda takip et.</p>
+      </div>
+
+      <!-- Sekmeler -->
+      <div class="grid grid-cols-2 gap-1 p-1 bg-zinc-950 rounded-xl mb-6 border border-zinc-800/80">
+        <button id="tab-login" onclick="switchAuthMode('login')" class="py-2 text-sm font-medium rounded-lg bg-zinc-800 text-white transition">Giriş Yap</button>
+        <button id="tab-register" onclick="switchAuthMode('register')" class="py-2 text-sm font-medium rounded-lg text-zinc-400 hover:text-white transition">Kayıt Ol</button>
+      </div>
+
+      <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-zinc-400 mb-1.5">E-posta Adresi</label>
+          <input type="email" id="auth-email" required placeholder="ornek@mail.com"
+            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-zinc-400 mb-1.5">Şifre</label>
+          <input type="password" id="auth-password" required minlength="6" placeholder="En az 6 karakter"
+            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition" />
+        </div>
+        <button type="submit" id="auth-submit-btn"
+          class="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">
+          Giriş Yap
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ANA UYGULAMA EKRANI -->
+  <div id="app-screen" class="hidden flex-1 flex flex-col max-w-3xl w-full mx-auto pb-24">
+    
+    <!-- Üst Bar -->
+    <header class="sticky top-0 z-30 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm">
+          AP
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white leading-none">Programım</h1>
+          <p id="user-email-display" class="text-[11px] text-zinc-400 mt-1 truncate max-w-[180px] sm:max-w-xs"></p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Kronometre Tetikleyici -->
+        <button onclick="toggleTimerModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:border-zinc-700 transition">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="mini-timer-text">Sayaç</span>
+        </button>
+        <!-- Çıkış -->
+        <button onclick="handleLogout()" title="Çıkış Yap" class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-red-500/30 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Gün Sekmeleri -->
+    <div class="px-4 pt-4">
+      <div id="day-tabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+        <!-- Dinamik gün sekmeleri buraya gelecek -->
+      </div>
+    </div>
+
+    <!-- İçerik Alanı -->
+    <main class="flex-1 px-4 pt-2">
+      <!-- Yükleniyor -->
+      <div id="loading-state" class="py-16 text-center text-zinc-500 text-sm">
+        Programın yükleniyor...
+      </div>
+
+      <!-- Boş Ekran (Hiç hareket yoksa) -->
+      <div id="empty-state" class="hidden py-12 px-4 text-center bg-zinc-900/40 border border-dashed border-zinc-800 rounded-2xl mt-2">
+        <div class="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-3 text-zinc-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </div>
+        <h3 class="text-base font-semibold text-white">Henüz bir programın yok</h3>
+        <p class="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">Kendi günlerini ve hareketlerini ekleyebilir veya tek tıkla örnek bir başlangıç programı yükleyebilirsin.</p>
+        <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+          <button onclick="openExerciseModal()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition">
+            + İlk Hareketini Ekle
+          </button>
+          <button onclick="loadSampleProgram()" id="sample-btn" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded-xl text-xs transition">
+            Örnek Program Yükle (PPL)
+          </button>
+        </div>
+      </div>
+
+      <!-- Seçili Günün Başlığı ve Hareket Listesi -->
+      <div id="workout-content" class="hidden space-y-3 mt-1">
+        <div class="flex items-center justify-between py-1">
+          <div>
+            <h2 id="current-day-title" class="text-lg font-bold text-white"></h2>
+            <p id="current-day-stats" class="text-xs text-zinc-400"></p>
+          </div>
+          <button onclick="resetTodayChecks()" class="text-xs text-zinc-400 hover:text-emerald-400 underline underline-offset-4 transition">
+            Tikleri Sıfırla
+          </button>
+        </div>
+
+        <div id="exercise-list" class="space-y-3">
+          <!-- Hareket kartları buraya gelecek -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Alt Sabit Ekleme Butonu -->
+    <div class="fixed bottom-5 right-5 z-30">
+      <button onclick="openExerciseModal()" class="flex items-center gap-2 px-5 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-2xl shadow-xl shadow-emerald-500/25 transition active:scale-95">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span class="text-sm">Hareket Ekle</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HAREKET EKLE / DÜZENLE MODALI -->
+  <div id="exercise-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full max-w-md bg-zinc-900 border-t sm:border border-zinc-800 rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modal-title" class="text-lg font-bold text-white">Yeni Hareket Ekle</h3>
+        <button onclick="closeExerciseModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-zinc-800/60">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="exercise-form" onsubmit="saveExercise(event)" class="space-y-4">
+        <input type="hidden" id="edit-id" />
+
+        <div>
+          <label class="block text-xs font-medium text-zinc-400 mb-1">Antrenman Günü / Başlığı</label>
+          <input type="text" id="input-day" list="existing-days" required placeholder="Örn: 1. Gün - Göğüs & Ön Kol"
+            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+          <datalist id="existing-days"></datalist>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-zinc-400 mb-1">Hareket Adı</label>
+          <input type="text" id="input-name" required placeholder="Örn: Incline Dumbbell Press"
+            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 mb-1">Set Sayısı</label>
+            <input type="number" id="input-sets" required min="1" max="15" value="4"
+              class="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white text-center focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 mb-1">Tekrar</label>
+            <input type="text" id="input-reps" required placeholder="8-12" value="10-12"
+              class="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white text-center focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-400 mb-1">Ağırlık (Ops.)</label>
+            <input type="text" id="input-weight" placeholder="20 kg"
+              class="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white text-center focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-zinc-400 mb-1">Not / Tempo / Dinlenme (Opsiyonel)</label>
+          <input type="text" id="input-notes" placeholder="Örn: Negatifleri 3 sn yavaş indir, 90 sn dinlen"
+            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeExerciseModal()" class="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium rounded-xl text-sm transition">
+            İptal
+          </button>
+          <button type="submit" id="save-exercise-btn" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-xl text-sm transition">
+            Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DİNLENME KRONOMETRESİ MODALI -->
+  <div id="timer-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-xs bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center shadow-2xl">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Dinlenme Sayacı</span>
+        <button onclick="toggleTimerModal()" class="text-zinc-400 hover:text-white">✕</button>
+      </div>
+      <div id="timer-display" class="text-5xl font-bold text-emerald-400 my-5 font-mono">01:30</div>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button onclick="startTimer(60)" class="py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold">60 sn</button>
+        <button onclick="startTimer(90)" class="py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold">90 sn</button>
+        <button onclick="startTimer(120)" class="py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold">2 dk</button>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="stopTimer()" class="flex-1 py-2 bg-red-500/15 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold">Durdur</button>
+        <button onclick="toggleTimerModal()" class="flex-1 py-2 bg-zinc-800 text-zinc-200 rounded-xl text-xs font-semibold">Gizle</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // SUPABASE BAĞLANTI AYARLARI
+    const SUPABASE_URL = 'https://aimqmhnutgzycnrajbrq.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_5tiaAs3wr9kxdIGBVatryw_X5mu9IRm';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // UYGULAMA DURUMU (STATE)
+    let currentUser = null;
+    let authMode = 'login';
+    let allWorkouts = [];
+    let selectedDay = null;
+    let completedSets = JSON.parse(localStorage.getItem('completedSets') || '{}');
+
+    // BİLDİRİM FONKSİYONU
+    function showToast(msg, type = 'success') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = `fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xl transition-all duration-300 ${
+        type === 'error' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-zinc-950'
+      }`;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 3200);
+    }
+
+    // OTURUM KONTROLÜ
+    async function init() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        showApp();
+      } else {
+        showAuth();
+      }
+
+      sb.auth.onAuthStateChange((_event, session) => {
+        if (session) {
+          currentUser = session.user;
+          showApp();
+        } else {
+          currentUser = null;
+          showAuth();
+        }
+      });
+    }
+
+    function showAuth() {
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('app-screen').classList.add('hidden');
+    }
+
+    function showApp() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('user-email-display').textContent = currentUser.email;
+      fetchWorkouts();
+    }
+
+    // GİRİŞ / KAYIT İŞLEMLERİ
+    function switchAuthMode(mode) {
+      authMode = mode;
+      const loginTab = document.getElementById('tab-login');
+      const regTab = document.getElementById('tab-register');
+      const btn = document.getElementById('auth-submit-btn');
+
+      if (mode === 'login') {
+        loginTab.className = 'py-2 text-sm font-medium rounded-lg bg-zinc-800 text-white transition';
+        regTab.className = 'py-2 text-sm font-medium rounded-lg text-zinc-400 hover:text-white transition';
+        btn.textContent = 'Giriş Yap';
+      } else {
+        regTab.className = 'py-2 text-sm font-medium rounded-lg bg-zinc-800 text-white transition';
+        loginTab.className = 'py-2 text-sm font-medium rounded-lg text-zinc-400 hover:text-white transition';
+        btn.textContent = 'Hesap Oluştur';
+      }
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const btn = document.getElementById('auth-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Bekleyin...';
+
+      try {
+        if (authMode === 'login') {
+          const { error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          showToast('Hoş geldin!');
+        } else {
+          const { error } = await sb.auth.signUp({ email, password });
+          if (error) throw error;
+          showToast('Hesabın oluşturuldu!');
+        }
+      } catch (err) {
+        showToast(err.message || 'Bir hata oluştu.', 'error');
+      } finally {
+        btn.disabled = false;
+        switchAuthMode(authMode);
+      }
+    }
+
+    async function handleLogout() {
+      await sb.auth.signOut();
+      allWorkouts = [];
+      selectedDay = null;
+    }
+
+    // VERİTABANINDAN PROGRAMI ÇEKME
+    async function fetchWorkouts() {
+      document.getElementById('loading-state').classList.remove('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('workout-content').classList.add('hidden');
+
+      const { data, error } = await sb
+        .from('workouts')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      document.getElementById('loading-state').classList.add('hidden');
+
+      if (error) {
+        showToast('Veriler alınamadı: ' + error.message, 'error');
+        return;
+      }
+
+      allWorkouts = data || [];
+      renderApp();
+    }
+
+    // ARAYÜZÜ ÇİZME
+    function renderApp() {
+      const dayTabsEl = document.getElementById('day-tabs');
+      const datalistEl = document.getElementById('existing-days');
+      dayTabsEl.innerHTML = '';
+      datalistEl.innerHTML = '';
+
+      if (allWorkouts.length === 0) {
+        document.getElementById('empty-state').classList.remove('hidden');
+        document.getElementById('workout-content').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('workout-content').classList.remove('hidden');
+
+      // Benzersiz günleri çıkar
+      const days = [...new Set(allWorkouts.map(w => w.day_name))];
+      if (!selectedDay || !days.includes(selectedDay)) {
+        selectedDay = days[0];
+      }
+
+      days.forEach(day => {
+        // Datalist seçeneği
+        const opt = document.createElement('option');
+        opt.value = day;
+        datalistEl.appendChild(opt);
+
+        // Sekme butonu
+        const btn = document.createElement('button');
+        const isActive = day === selectedDay;
+        btn.textContent = day;
+        btn.onclick = () => { selectedDay = day; renderApp(); };
+        btn.className = `px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+          isActive
+            ? 'bg-emerald-500 text-zinc-950 border-emerald-400 shadow-md shadow-emerald-500/20'
+            : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
+        }`;
+        dayTabsEl.appendChild(btn);
+      });
+
+      // Seçili günün hareketlerini filtrele
+      const dayExercises = allWorkouts.filter(w => w.day_name === selectedDay);
+      document.getElementById('current-day-title').textContent = selectedDay;
+      document.getElementById('current-day-stats').textContent = `${dayExercises.length} hareket • Toplam ${dayExercises.reduce((acc, x) => acc + x.sets, 0)} set`;
+
+      const listEl = document.getElementById('exercise-list');
+      listEl.innerHTML = '';
+
+      dayExercises.forEach(ex => {
+        const card = document.createElement('div');
+        card.className = 'bg-zinc-900/80 border border-zinc-800/90 rounded-2xl p-4 transition hover:border-zinc-700';
+
+        // Set baloncuklarını oluştur
+        let setBadgesHtml = '';
+        for (let i = 1; i <= ex.sets; i++) {
+          const key = `${ex.id}_${i}`;
+          const done = !!completedSets[key];
+          setBadgesHtml += `
+            <button onclick="toggleSet('${ex.id}', ${i})"
+              class="h-8 px-3 rounded-lg text-xs font-semibold border transition flex items-center gap-1 ${
+                done
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                  : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
+              }">
+              <span>${i}. Set</span>
+              ${done ? '<span>✓</span>' : ''}
+            </button>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h4 class="font-bold text-white text-base">${escapeHtml(ex.exercise_name)}</h4>
+              <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs">
+                <span class="px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-200 font-medium">${ex.sets} Set × ${escapeHtml(ex.reps)} Tekrar</span>
+                ${ex.weight ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">${escapeHtml(ex.weight)}</span>` : ''}
+              </div>
+              ${ex.notes ? `<p class="text-xs text-zinc-400 mt-2 italic">"${escapeHtml(ex.notes)}"</p>` : ''}
+            </div>
+
+            <div class="flex items-center gap-1">
+              <button onclick='openEditModal(${JSON.stringify(ex).replace(/'/g, "&#39;")})' title="Düzenle" class="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                </svg>
+              </button>
+              <button onclick="deleteExercise('${ex.id}')" title="Sil" class="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-zinc-800/80">
+            ${setBadgesHtml}
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    // SET TAMAMLAMA TİKİ
+    function toggleSet(exId, setNum) {
+      const key = `${exId}_${setNum}`;
+      if (completedSets[key]) {
+        delete completedSets[key];
+      } else {
+        completedSets[key] = true;
+      }
+      localStorage.setItem('completedSets', JSON.stringify(completedSets));
+      renderApp();
+    }
+
+    function resetTodayChecks() {
+      completedSets = {};
+      localStorage.removeItem('completedSets');
+      renderApp();
+      showToast('Tüm set tikleri sıfırlandı.');
+    }
+
+    // MODAL İŞLEMLERİ (EKLE / DÜZENLE)
+    function openExerciseModal() {
+      document.getElementById('modal-title').textContent = 'Yeni Hareket Ekle';
+      document.getElementById('edit-id').value = '';
+      document.getElementById('input-day').value = selectedDay || '1. Gün';
+      document.getElementById('input-name').value = '';
+      document.getElementById('input-sets').value = '4';
+      document.getElementById('input-reps').value = '10-12';
+      document.getElementById('input-weight').value = '';
+      document.getElementById('input-notes').value = '';
+      document.getElementById('exercise-modal').classList.remove('hidden');
+    }
+
+    function openEditModal(ex) {
+      document.getElementById('modal-title').textContent = 'Hareketi Düzenle';
+      document.getElementById('edit-id').value = ex.id;
+      document.getElementById('input-day').value = ex.day_name;
+      document.getElementById('input-name').value = ex.exercise_name;
+      document.getElementById('input-sets').value = ex.sets;
+      document.getElementById('input-reps').value = ex.reps;
+      document.getElementById('input-weight').value = ex.weight || '';
+      document.getElementById('input-notes').value = ex.notes || '';
+      document.getElementById('exercise-modal').classList.remove('hidden');
+    }
+
+    function closeExerciseModal() {
+      document.getElementById('exercise-modal').classList.add('hidden');
+    }
+
+    async function saveExercise(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const payload = {
+        day_name: document.getElementById('input-day').value.trim(),
+        exercise_name: document.getElementById('input-name').value.trim(),
+        sets: parseInt(document.getElementById('input-sets').value, 10),
+        reps: document.getElementById('input-reps').value.trim(),
+        weight: document.getElementById('input-weight').value.trim(),
+        notes: document.getElementById('input-notes').value.trim()
+      };
+
+      const btn = document.getElementById('save-exercise-btn');
+      btn.disabled = true;
+      btn.textContent = 'Kaydediliyor...';
+
+      try {
+        if (id) {
+          const { error } = await sb.from('workouts').update(payload).eq('id', id);
+          if (error) throw error;
+          showToast('Hareket güncellendi.');
+        } else {
+          const { error } = await sb.from('workouts').insert([payload]);
+          if (error) throw error;
+          showToast('Hareket eklendi.');
+        }
+        selectedDay = payload.day_name;
+        closeExerciseModal();
+        await fetchWorkouts();
+      } catch (err) {
+        showToast('Hata: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kaydet';
+      }
+    }
+
+    async function deleteExercise(id) {
+      if (!confirm('Bu hareketi silmek istediğine emin misin?')) return;
+      const { error } = await sb.from('workouts').delete().eq('id', id);
+      if (error) {
+        showToast('Silinemedi: ' + error.message, 'error');
+      } else {
+        showToast('Hareket silindi.');
+        await fetchWorkouts();
+      }
+    }
+
+    // ÖRNEK PROGRAM YÜKLEME
+    async function loadSampleProgram() {
+      const btn = document.getElementById('sample-btn');
+      btn.disabled = true;
+      btn.textContent = 'Yükleniyor...';
+
+      const sampleData = [
+        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Bench Press', sets: 4, reps: '8-10', weight: '60 kg', notes: 'Göğse kontrollü indir' },
+        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', weight: '20 kg', notes: 'Üst göğüs odaklı' },
+        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Lateral Raise', sets: 4, reps: '12-15', weight: '10 kg', notes: 'Dirsekler hafif kırık' },
+        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Triceps Rope Pushdown', sets: 3, reps: '12-15', weight: '25 kg', notes: 'Altta 1 sn sıkıştır' },
+        { day_name: '2. Gün - Çekiş (Pull)', exercise_name: 'Lat Pulldown', sets: 4, reps: '10-12', weight: '55 kg', notes: 'Göğse doğru çek' },
+        { day_name: '2. Gün - Çekiş (Pull)', exercise_name: 'Barbell Row', sets: 4, reps: '8-10', weight: '50 kg', notes: 'Bel düz' },
+        { day_name: '2. Gün - Çekiş (Pull)', exercise_name: 'Barbell Biceps Curl', sets: 3, reps: '10-12', weight: '25 kg', notes: 'Sallanmadan' },
+        { day_name: '3. Gün - Bacak (Legs)', exercise_name: 'Squat', sets: 4, reps: '8-10', weight: '70 kg', notes: 'Tam derinlik' },
+        { day_name: '3. Gün - Bacak (Legs)', exercise_name: 'Romanian Deadlift', sets: 3, reps: '10-12', weight: '60 kg', notes: 'Arka bacak esnemesi' },
+        { day_name: '3. Gün - Bacak (Legs)', exercise_name: 'Leg Extension', sets: 3, reps: '12-15', weight: '40 kg', notes: '' }
+      ];
+
+      const { error } = await sb.from('workouts').insert(sampleData);
+      if (error) {
+        showToast('Hata: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Örnek Program Yükle (PPL)';
+      } else {
+        showToast('Örnek program yüklendi!');
+        await fetchWorkouts();
+      }
+    }
+
+    // DİNLENME KRONOMETRESİ
+    let timerInterval = null;
+    let remainingSeconds = 90;
+
+    function toggleTimerModal() {
+      document.getElementById('timer-modal').classList.toggle('hidden');
+    }
+
+    function updateTimerUI() {
+      const m = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+      const s = String(remainingSeconds % 60).padStart(2, '0');
+      const formatted = `${m}:${s}`;
+      document.getElementById('timer-display').textContent = formatted;
+      document.getElementById('mini-timer-text').textContent = timerInterval ? formatted : 'Sayaç';
+    }
+
+    function startTimer(seconds) {
+      clearInterval(timerInterval);
+      remainingSeconds = seconds;
+      updateTimerUI();
+      timerInterval = setInterval(() => {
+        remainingSeconds--;
+        updateTimerUI();
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          updateTimerUI();
+          showToast('Dinlenme süresi doldu! Yeni sete geç.');
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      remainingSeconds = 90;
+      updateTimerUI();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    init();
+  </script>
+</body>
+</html>
