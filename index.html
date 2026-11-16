@@ -2056,4 +2056,823 @@
 
     if (!dayObj.rest) {
       html += '<div class="section-head">';
-      html += '<span class="section-title">' + editorDay + ' Hareketleri (' + (dayObj.ex ? dayObj.ex
+      html += '<span class="section-title">' + editorDay + ' Hareketleri (' + (dayObj.ex ? dayObj.ex.length : 0) + ')</span>';
+      html += '<button class="copy-day-pill-btn" onclick="openCopyDayModal()">❐ Günü Kopyala</button>';
+      html += '</div>';
+
+      if (!dayObj.ex || dayObj.ex.length === 0) {
+        html += '<div class="rest-card" style="padding:2rem 1rem;"><p>Bu güne henüz hareket eklenmemiş.</p></div>';
+      } else {
+        html += '<div class="sortable-list" id="sortableExList">';
+        dayObj.ex.forEach(function (ex, idx) {
+          var isFocus = dayObj.focus === ex.name;
+          html += '<div class="prog-ex-card' + (ex.superset ? ' superset-card' : '') + '" data-idx="' + idx + '">';
+          html += '<div class="drag-handle" title="Sırayı değiştirmek için basılı tutup sürükle">≡</div>';
+          html += '<div class="prog-ex-info"><div class="prog-ex-title">' + escapeHtml(ex.name);
+          if (isFocus) html += '<span class="focus-pill">★ Odak</span>';
+          if (ex.superset) html += '<span class="superset-pill">⚡ Devre</span>';
+          html += '<span class="group-tag">' + escapeHtml(getMuscleGroup(ex)) + '</span></div>';
+          html += '<div class="prog-ex-meta">' + ex.sets + ' Set × ' + escapeHtml(ex.reps) + ' Tekrar</div></div>';
+          html += '<div class="prog-ex-actions">';
+          html += '<button class="mini-btn" onclick="moveProgEx(' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + ' title="Yukarı Taşı">↑</button>';
+          html += '<button class="mini-btn" onclick="moveProgEx(' + idx + ', 1)" ' + (idx === dayObj.ex.length - 1 ? 'disabled' : '') + ' title="Aşağı Taşı">↓</button>';
+          html += '<button class="mini-btn" onclick="openExEditor(' + idx + ')" title="Düzenle"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>';
+          html += '<button class="mini-btn danger" onclick="deleteProgEx(' + idx + ')" title="Sil"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+      html += '<button class="btn-primary" onclick="openExEditor(-1)">+ ' + editorDay + ' Gününe Hareket Ekle</button>';
+
+      // GÜNE ÖZEL NOTLAR DÜZENLEYİCİ
+      var flatDayNotes = getFlattenedDayNotes(dayObj);
+      html += '<div class="note-edit-box">';
+      html += '<div class="note-edit-header"><span class="section-title" style="padding:0;">' + editorDay + ' Gününe Özel Notlar</span></div>';
+      if (flatDayNotes.length === 0) {
+        html += '<div style="font-size:0.78rem; color:var(--text-3); padding:0.25rem 0;">Henüz bu güne özel not eklenmemiş.</div>';
+      } else {
+        flatDayNotes.forEach(function (noteTxt, nIdx) {
+          html += '<div class="note-edit-item"><span>• ' + escapeHtml(noteTxt) + '</span>';
+          html += '<button class="mini-btn danger" onclick="deleteDayNote(' + nIdx + ')" title="Sil">✕</button></div>';
+        });
+      }
+      html += '<div class="inline-add-row"><input type="text" id="newDayNoteInput" placeholder="Örn: Kum torbası 3 tur × 2 dk..."><button onclick="addDayNote()">Ekle</button></div>';
+      html += '</div>';
+    }
+
+    // GENEL NOTLAR DÜZENLEYİCİ
+    html += '<div class="note-edit-box">';
+    html += '<div class="note-edit-header"><span class="section-title" style="padding:0;">Genel Kurallar & Isınma Notları</span></div>';
+    state.generalNotes.forEach(function (gn, gIdx) {
+      html += '<div class="note-edit-item"><span>• ' + escapeHtml(gn) + '</span>';
+      html += '<button class="mini-btn danger" onclick="deleteGeneralNote(' + gIdx + ')" title="Sil">✕</button></div>';
+    });
+    html += '<div class="inline-add-row"><input type="text" id="newGeneralNoteInput" placeholder="Genel antrenman kuralı ekle..."><button onclick="addGeneralNote()">Ekle</button></div>';
+    html += '</div>';
+
+    $("#programContent").innerHTML = html;
+
+    // Event Listeners
+    $("#activeProgSelect").addEventListener("change", function (e) {
+      state.library.activeId = e.target.value;
+      saveToCloud();
+      renderHeader();
+      renderProgramEditor();
+      showToast("Aktif program: " + getActiveProgramObj().name);
+    });
+
+    $("#programContent").querySelectorAll("[data-ed-day]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        editorDay = btn.dataset.edDay;
+        renderProgramEditor();
+      });
+    });
+
+    $("#toggleRestDay").addEventListener("change", function (e) {
+      if (!days[editorDay]) days[editorDay] = { rest: false, ex: [], notes: [] };
+      days[editorDay].rest = e.target.checked;
+      saveToCloud();
+      renderProgramEditor();
+      showToast(e.target.checked ? editorDay + " dinlenme günü yapıldı" : editorDay + " antrenman günü yapıldı");
+    });
+
+    initDragAndDropSort();
+  }
+
+  // GÜNE ÖZEL NOT YARDIMCILARI (Eski nesne formatını düz string listesine uyumlu çevirir)
+  function getFlattenedDayNotes(dayObj) {
+    if (!dayObj.notes || !Array.isArray(dayObj.notes)) return [];
+    var out = [];
+    dayObj.notes.forEach(function (n) {
+      if (typeof n === "string") out.push(n);
+      else if (n && Array.isArray(n.items)) {
+        n.items.forEach(function (it) { out.push((n.title ? n.title + ": " : "") + it); });
+      }
+    });
+    return out;
+  }
+
+  window.addDayNote = function () {
+    var inp = $("#newDayNoteInput");
+    var val = inp.value.trim();
+    if (!val) return;
+    var days = getActiveDays();
+    var dayObj = days[editorDay];
+    var list = getFlattenedDayNotes(dayObj);
+    list.push(val);
+    dayObj.notes = list;
+    saveToCloud();
+    renderProgramEditor();
+    showToast("Gün notu eklendi");
+  };
+
+  window.deleteDayNote = function (idx) {
+    var days = getActiveDays();
+    var dayObj = days[editorDay];
+    var list = getFlattenedDayNotes(dayObj);
+    list.splice(idx, 1);
+    dayObj.notes = list;
+    saveToCloud();
+    renderProgramEditor();
+  };
+
+  window.addGeneralNote = function () {
+    var inp = $("#newGeneralNoteInput");
+    var val = inp.value.trim();
+    if (!val) return;
+    state.generalNotes.push(val);
+    saveToCloud();
+    renderProgramEditor();
+    showToast("Genel not eklendi");
+  };
+
+  window.deleteGeneralNote = function (idx) {
+    state.generalNotes.splice(idx, 1);
+    saveToCloud();
+    renderProgramEditor();
+  };
+
+  // SÜRÜKLE-BIRAK (TOUCH + MOUSE POINTER) SIRALAMA MOTORU
+  function initDragAndDropSort() {
+    var listEl = $("#sortableExList");
+    if (!listEl) return;
+    var handles = listEl.querySelectorAll(".drag-handle");
+    handles.forEach(function (handle) {
+      handle.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        var card = handle.closest(".prog-ex-card");
+        var startIdx = parseInt(card.dataset.idx, 10);
+        var cards = Array.from(listEl.querySelectorAll(".prog-ex-card"));
+        var rects = cards.map(function (c) { return c.getBoundingClientRect(); });
+        var startY = e.clientY;
+        var currentTargetIdx = startIdx;
+
+        card.classList.add("dragging");
+        handle.setPointerCapture(e.pointerId);
+
+        function onMove(ev) {
+          var dy = ev.clientY - startY;
+          card.style.transform = "translateY(" + dy + "px) scale(1.02)";
+          var midY = rects[startIdx].top + rects[startIdx].height / 2 + dy;
+
+          var newIdx = startIdx;
+          for (var i = 0; i < rects.length; i++) {
+            var itemMid = rects[i].top + rects[i].height / 2;
+            if (midY > itemMid) newIdx = i;
+          }
+          currentTargetIdx = newIdx;
+
+          cards.forEach(function (c, i) {
+            if (i === startIdx) return;
+            var shift = 0;
+            if (startIdx < currentTargetIdx && i > startIdx && i <= currentTargetIdx) {
+              shift = -(rects[startIdx].height + 8);
+            } else if (startIdx > currentTargetIdx && i < startIdx && i >= currentTargetIdx) {
+              shift = (rects[startIdx].height + 8);
+            }
+            c.style.transform = shift ? "translateY(" + shift + "px)" : "";
+          });
+        }
+
+        function onUp() {
+          handle.removeEventListener("pointermove", onMove);
+          handle.removeEventListener("pointerup", onUp);
+          handle.removeEventListener("pointercancel", onUp);
+          card.classList.remove("dragging");
+          cards.forEach(function (c) { c.style.transform = ""; });
+
+          if (currentTargetIdx !== startIdx) {
+            var days = getActiveDays();
+            var arr = days[editorDay].ex;
+            var moved = arr.splice(startIdx, 1)[0];
+            arr.splice(currentTargetIdx, 0, moved);
+            saveToCloud();
+            renderProgramEditor();
+            showToast("Sıralama güncellendi");
+          }
+        }
+
+        handle.addEventListener("pointermove", onMove);
+        handle.addEventListener("pointerup", onUp);
+        handle.addEventListener("pointercancel", onUp);
+      });
+    });
+  }
+
+  window.moveProgEx = function (idx, dir) {
+    var days = getActiveDays();
+    var arr = days[editorDay].ex;
+    var target = idx + dir;
+    if (target < 0 || target >= arr.length) return;
+    var tmp = arr[idx];
+    arr[idx] = arr[target];
+    arr[target] = tmp;
+    saveToCloud();
+    renderProgramEditor();
+  };
+
+  // GÜN KOPYALAMA MODAL İŞLEMLERİ
+  window.openCopyDayModal = function () {
+    var activeProg = getActiveProgramObj();
+    $("#copyDayModalTitle").textContent = editorDay + " Gününü Kopyala";
+    $("#copyDayModalSub").textContent = '"' + activeProg.name + '" programındaki ' + editorDay + ' kopyalanacak';
+
+    var progSel = $("#copyTargetProgSelect");
+    progSel.innerHTML = "";
+    state.library.list.forEach(function (p) {
+      var opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name + (p.id === activeProg.id ? " (Aktif Program)" : "");
+      if (p.id === activeProg.id) opt.selected = true;
+      progSel.appendChild(opt);
+    });
+
+    var daySel = $("#copyTargetDaySelect");
+    daySel.innerHTML = "";
+    WEEK_DAYS.forEach(function (d) {
+      var opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = d;
+      if (d !== editorDay && d === "Perşembe" && editorDay === "Salı") opt.selected = true;
+      daySel.appendChild(opt);
+    });
+
+    $("#copyDayModal").classList.add("show");
+  };
+
+  window.closeCopyDayModal = function () {
+    $("#copyDayModal").classList.remove("show");
+  };
+
+  $("#copyDayConfirmBtn").addEventListener("click", function () {
+    var targetProgId = $("#copyTargetProgSelect").value;
+    var targetDay = $("#copyTargetDaySelect").value;
+    var sourceProg = getActiveProgramObj();
+    var targetProg = state.library.list.find(function (p) { return p.id === targetProgId; });
+
+    if (!targetProg) return;
+    if (sourceProg.id === targetProg.id && targetDay === editorDay) {
+      showToast("Kaynak ve hedef gün aynı olamaz");
+      return;
+    }
+
+    var sourceDayData = sourceProg.days[editorDay] || { rest: false, ex: [], notes: [] };
+    targetProg.days[targetDay] = JSON.parse(JSON.stringify(sourceDayData));
+
+    saveToCloud();
+    closeCopyDayModal();
+    if (targetProg.id === sourceProg.id) {
+      editorDay = targetDay;
+      renderProgramEditor();
+    }
+    showToast(editorDay + " → " + targetDay + " (" + targetProg.name + ") kopyalandı");
+  });
+
+  // PROGRAM KÜTÜPHANE MODAL İŞLEMLERİ
+  var progNameAction = "create";
+  window.openProgNameModal = function (action) {
+    progNameAction = action;
+    var activeProg = getActiveProgramObj();
+    if (action === "create") {
+      $("#progNameModalTitle").textContent = "Yeni Boş Program Oluştur";
+      $("#progNameModalSub").textContent = "Sıfırdan oluşturacağın programın adını yaz";
+      $("#progNameInput").value = "";
+    } else if (action === "duplicate") {
+      $("#progNameModalTitle").textContent = "Programı Farklı Kaydet";
+      $("#progNameModalSub").textContent = "Mevcut programın kopyası oluşturulacak";
+      $("#progNameInput").value = activeProg.name + " (Kopya)";
+    } else if (action === "rename") {
+      $("#progNameModalTitle").textContent = "Program Adını Değiştir";
+      $("#progNameModalSub").textContent = "Aktif programın yeni adını yaz";
+      $("#progNameInput").value = activeProg.name;
+    }
+    $("#progNameModal").classList.add("show");
+    setTimeout(function () { $("#progNameInput").focus(); }, 60);
+  };
+
+  window.closeProgNameModal = function () {
+    $("#progNameModal").classList.remove("show");
+  };
+
+  $("#progNameConfirmBtn").addEventListener("click", function () {
+    var name = $("#progNameInput").value.trim();
+    if (!name) { showToast("Program adı boş olamaz"); return; }
+    var activeProg = getActiveProgramObj();
+
+    if (progNameAction === "create") {
+      var newId = "prog_" + Date.now();
+      state.library.list.push({ id: newId, name: name, days: createEmptyDays() });
+      state.library.activeId = newId;
+      showToast('"' + name + '" oluşturuldu ve devreye alındı');
+    } else if (progNameAction === "duplicate") {
+      var copyId = "prog_" + Date.now();
+      state.library.list.push({
+        id: copyId,
+        name: name,
+        days: JSON.parse(JSON.stringify(activeProg.days))
+      });
+      state.library.activeId = copyId;
+      showToast('"' + name + '" olarak kaydedildi');
+    } else if (progNameAction === "rename") {
+      activeProg.name = name;
+      showToast("Program adı güncellendi");
+    }
+
+    saveToCloud();
+    closeProgNameModal();
+    renderHeader();
+    renderProgramEditor();
+  });
+
+  window.deleteActiveProgram = function () {
+    if (state.library.list.length <= 1) {
+      showToast("En az 1 kayıtlı program kalmalıdır");
+      return;
+    }
+    var activeProg = getActiveProgramObj();
+    if (!confirm('"' + activeProg.name + '" programını silmek istediğine emin misin?')) return;
+    state.library.list = state.library.list.filter(function (p) { return p.id !== activeProg.id; });
+    state.library.activeId = state.library.list[0].id;
+    saveToCloud();
+    renderHeader();
+    renderProgramEditor();
+    showToast("Program silindi");
+  };
+
+  // HAREKET EDİTÖRÜ
+  window.openExEditor = function (idx) {
+    var days = getActiveDays();
+    var dayObj = days[editorDay] || { rest: false, ex: [] };
+    $("#editExIdx").value = idx;
+    $("#exModalDaySub").textContent = editorDay + " (" + getActiveProgramObj().name + ")";
+    if (idx >= 0 && dayObj.ex[idx]) {
+      var ex = dayObj.ex[idx];
+      $("#exModalTitle").textContent = "Hareketi Düzenle";
+      $("#exNameInput").value = ex.name;
+      $("#exSetsInput").value = ex.sets;
+      $("#exRepsInput").value = ex.reps;
+      $("#exGroupInput").value = getMuscleGroup(ex);
+      $("#exSupersetInput").checked = !!ex.superset;
+      var isF = dayObj.focus === ex.name;
+      $("#exFocusInput").checked = isF;
+      $("#exFocusNoteWrap").style.display = isF ? "block" : "none";
+      $("#exFocusNoteInput").value = isF ? (dayObj.focusNote || "") : "";
+    } else {
+      $("#exModalTitle").textContent = "Yeni Hareket Ekle";
+      $("#exNameInput").value = "";
+      $("#exSetsInput").value = 3;
+      $("#exRepsInput").value = "8-12";
+      $("#exGroupInput").value = "İtme";
+      $("#exSupersetInput").checked = false;
+      $("#exFocusInput").checked = false;
+      $("#exFocusNoteWrap").style.display = "none";
+      $("#exFocusNoteInput").value = "";
+    }
+    $("#exEditorModal").classList.add("show");
+  };
+
+  $("#exFocusInput").addEventListener("change", function (e) {
+    $("#exFocusNoteWrap").style.display = e.target.checked ? "block" : "none";
+  });
+  $("#exModalCancel").addEventListener("click", function () { $("#exEditorModal").classList.remove("show"); });
+  $("#exModalSave").addEventListener("click", function () {
+    var name = $("#exNameInput").value.trim();
+    var sets = parseInt($("#exSetsInput").value, 10) || 3;
+    var reps = $("#exRepsInput").value.trim() || "10";
+    var group = $("#exGroupInput").value;
+    var superset = $("#exSupersetInput").checked;
+    var isFocus = $("#exFocusInput").checked;
+    var focusNote = $("#exFocusNoteInput").value.trim();
+    if (!name) { showToast("Hareket adı yazmalısın"); return; }
+
+    var days = getActiveDays();
+    if (!days[editorDay]) days[editorDay] = { rest: false, ex: [] };
+    if (!days[editorDay].ex) days[editorDay].ex = [];
+
+    var idx = parseInt($("#editExIdx").value, 10);
+    var exObj = { name: name, sets: sets, reps: reps, group: group, superset: superset };
+    if (idx >= 0) days[editorDay].ex[idx] = exObj;
+    else days[editorDay].ex.push(exObj);
+
+    if (isFocus) {
+      days[editorDay].focus = name;
+      days[editorDay].focusNote = focusNote || "Bugünün ana hareketi. Formu koruyarak son 1-2 tekrar zorla.";
+    } else if (days[editorDay].focus === name) {
+      delete days[editorDay].focus;
+      delete days[editorDay].focusNote;
+    }
+
+    saveToCloud();
+    $("#exEditorModal").classList.remove("show");
+    renderProgramEditor();
+    showToast("Hareket kaydedildi");
+  });
+
+  window.deleteProgEx = function (idx) {
+    if (!confirm("Bu hareketi programdan silmek istiyor musun?")) return;
+    var days = getActiveDays();
+    var removed = days[editorDay].ex.splice(idx, 1)[0];
+    if (removed && days[editorDay].focus === removed.name) {
+      delete days[editorDay].focus;
+    }
+    saveToCloud();
+    renderProgramEditor();
+    showToast("Hareket silindi");
+  };
+
+  // AĞIRLIK SEÇİCİ
+  var wpDate = null, wpEx = null;
+  function openWeightPicker(dateISO, exName) {
+    wpDate = dateISO; wpEx = exName;
+    $("#weightExerciseName").textContent = exName;
+    var cur = (getSession(dateISO).weights && getSession(dateISO).weights[exName]) || null;
+    var html = '<button class="weight-option empty-option' + (cur == null ? ' selected' : '') + '" data-val="null">Ağırlık yok</button>';
+    for (var i = 1; i <= 200; i++) {
+      var kg = i * 2.5;
+      var sel = (cur != null && Math.abs(cur - kg) < 0.001) ? ' selected' : '';
+      html += '<button class="weight-option' + sel + '" data-val="' + kg + '">' + formatWeight(kg) + ' kg</button>';
+    }
+    $("#weightList").innerHTML = html;
+    $("#weightList").querySelectorAll(".weight-option").forEach(function (b) {
+      b.addEventListener("click", function () {
+        setExerciseWeight(wpDate, wpEx, b.dataset.val === "null" ? null : parseFloat(b.dataset.val));
+        $("#weightModal").classList.remove("show");
+        renderWorkout();
+      });
+    });
+    $("#weightModal").classList.add("show");
+    setTimeout(function () {
+      var sel = document.querySelector(".weight-option.selected");
+      if (sel) sel.scrollIntoView({ block: "center" });
+    }, 30);
+  }
+  $("#weightCloseBtn").addEventListener("click", function () { $("#weightModal").classList.remove("show"); });
+
+  // DİNLENME KRONOMETRESİ
+  var restTimerInt = null, restSec = 90;
+  window.openRestModal = function () { $("#restTimerModal").classList.add("show"); };
+  window.closeRestModal = function () { $("#restTimerModal").classList.remove("show"); };
+  function updateRestClock() {
+    var m = String(Math.floor(restSec / 60)).padStart(2, "0"), s = String(restSec % 60).padStart(2, "0");
+    var txt = m + ":" + s;
+    $("#restClockDisplay").textContent = txt;
+    var pill = $("#restPillLabel");
+    if (pill) pill.textContent = restTimerInt ? txt : "Sayaç";
+  }
+  window.startRestCountdown = function (sec) {
+    clearInterval(restTimerInt);
+    restSec = sec;
+    updateRestClock();
+    restTimerInt = setInterval(function () {
+      restSec--;
+      updateRestClock();
+      if (restSec <= 0) {
+        clearInterval(restTimerInt);
+        restTimerInt = null;
+        updateRestClock();
+        showToast("⏰ Dinlenme süresi doldu!");
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
+    }, 1000);
+  };
+  window.stopRestCountdown = function () {
+    clearInterval(restTimerInt);
+    restTimerInt = null;
+    restSec = 90;
+    updateRestClock();
+  };
+
+  // 3. TAKVİM
+  function renderCalendar() {
+    var days = getActiveDays();
+    var y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
+    $("#calMonthLabel").textContent = MONTHS_TR[m] + " " + y;
+    var html = "";
+    WEEK_HEADERS.forEach(function (h) { html += '<div class="cal-header">' + h + '</div>'; });
+    var first = new Date(y, m, 1), startWeekday = (first.getDay() + 6) % 7, daysInMonth = new Date(y, m + 1, 0).getDate();
+    for (var i = 0; i < startWeekday; i++) html += '<div class="cal-cell empty"></div>';
+    var t = today();
+    for (var d = 1; d <= daysInMonth; d++) {
+      var date = new Date(y, m, d), iso = toISO(date), dk = getDayKeyForDate(date), dp = days[dk];
+      var cls = "cal-cell" + (toISO(t) === iso ? " today" : "") + (date.getTime() > t.getTime() ? " future" : "");
+      var dot = "";
+      if (dp && !dp.rest && dp.ex && dp.ex.length) {
+        var p = getDayProgress(iso, dk);
+        if (p.done === p.total && p.total > 0) cls += " complete";
+        else if (p.done > 0) cls += " partial";
+        dot = '<span class="cal-dot"></span>';
+      }
+      html += '<button class="' + cls + '" data-date="' + iso + '">' + d + dot + '</button>';
+    }
+    $("#calGrid").innerHTML = html;
+    $("#calGrid").querySelectorAll(".cal-cell[data-date]").forEach(function (cell) {
+      cell.addEventListener("click", function () {
+        selectedDate = fromISO(cell.dataset.date);
+        document.querySelector('.segmented button[data-view="workout"]').click();
+      });
+    });
+  }
+
+  // 4. İSTATİSTİK & PAYLAŞIM KARTI
+  function parseAvgReps(repsStr) {
+    if (!repsStr) return null;
+    var s = String(repsStr).trim();
+    var m = s.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
+    if (m) return (parseFloat(m[1]) + parseFloat(m[2])) / 2;
+    m = s.match(/^(\d+)\s*\+\s*(\d+)$/);
+    if (m) return parseInt(m[1], 10) + parseInt(m[2], 10);
+    m = s.match(/^(\d+(?:\.\d+)?)$/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  function collectRangeStats(startISO, endISO) {
+    var days = getActiveDays();
+    var sessions = 0, setsCount = 0, duration = 0, calories = 0, volume = 0;
+    var groups = {};
+    GROUP_ORDER.forEach(function (g) { groups[g] = 0; });
+    for (var iso in state.sessions) {
+      if (iso < startISO || iso > endISO) continue;
+      var s = state.sessions[iso];
+      if (!s || !s.sets) continue;
+      var dk = getDayKeyForDate(fromISO(iso)), prog = days[dk];
+      if (!prog || prog.rest || !prog.ex) continue;
+      var hasAny = false;
+      prog.ex.forEach(function (exDef) {
+        var resolved = resolveExerciseForDate(iso, exDef);
+        var arr = s.sets[resolved.activeName] || [];
+        var doneCount = arr.filter(Boolean).length;
+        if (doneCount > 0) {
+          hasAny = true;
+          setsCount += doneCount;
+          var grp = getMuscleGroup(exDef);
+          if (groups[grp] !== undefined) groups[grp] += doneCount;
+          var w = s.weights && s.weights[resolved.activeName];
+          if (w != null) {
+            var reps = parseAvgReps(resolved.reps);
+            if (reps) volume += w * doneCount * reps;
+          }
+        }
+      });
+      if (hasAny) sessions++;
+      duration += s.duration || 0;
+      calories += s.calories || 0;
+    }
+    return { sessions: sessions, sets: setsCount, duration: duration, calories: calories, volume: volume, groups: groups };
+  }
+
+  function renderDonut(groups) {
+    var total = 0;
+    GROUP_ORDER.forEach(function (g) { total += (groups[g] || 0); });
+    if (total === 0) return '<div class="stats-empty">Bu ay henüz veri yok</div>';
+    var r = 70, sw = 26, circ = 2 * Math.PI * r, offset = 0;
+    var svg = '<svg viewBox="0 0 200 200" class="donut"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="' + sw + '"/>';
+    GROUP_ORDER.forEach(function (g) {
+      var count = groups[g] || 0;
+      if (!count) return;
+      var dash = (count / total) * circ;
+      svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="' + GROUP_COLORS[g] + '" stroke-width="' + sw + '" stroke-dasharray="' + dash + ' ' + (circ - dash) + '" stroke-dashoffset="' + (-offset) + '" transform="rotate(-90 100 100)"/>';
+      offset += dash;
+    });
+    svg += '</svg><div class="donut-legend">';
+    GROUP_ORDER.forEach(function (g) {
+      var count = groups[g] || 0, pct = Math.round((count / total) * 100);
+      svg += '<div class="donut-legend-item"><span class="donut-legend-label"><span class="donut-legend-dot" style="background:' + GROUP_COLORS[g] + '"></span>' + g + '</span><span class="donut-legend-value">' + count + ' · ' + pct + '%</span></div>';
+    });
+    return '<div class="donut-wrap">' + svg + '</div></div>';
+  }
+
+  function renderStats() {
+    var now = today();
+    var wSt = collectRangeStats(toISO(normalizeToMonday(now)), toISO(now));
+    var mSt = collectRangeStats(toISO(new Date(now.getFullYear(), now.getMonth(), 1)), toISO(now));
+    var aSt = collectRangeStats("0000-00-00", toISO(now));
+
+    var tile = function (v, l) { return '<div class="stat-tile"><span class="stat-value">' + v + '</span><span class="stat-label">' + l + '</span></div>'; };
+    var html = '<button class="card-cta" id="openCardBtn"><div class="card-cta-icon"><svg viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16"/><path d="M14 14l1.586-1.586a2 2 0 0 1 2.828 0L20 14"/><circle cx="9" cy="9" r="2"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div><div class="card-cta-text"><div class="card-cta-title">Antrenman Kartı Oluştur</div><div class="card-cta-sub">Tarih aralığı seç, Story olarak paylaş</div></div><svg class="card-cta-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '<div class="stats-card"><h3>Bu Hafta</h3><div class="stats-grid">' + tile(wSt.sessions, "Antrenman") + tile(wSt.sets, "Set") + tile(formatDurationLong(wSt.duration), "Süre") + tile(wSt.calories + " kcal", "Kalori") + '</div></div>';
+    html += '<div class="stats-card"><h3>Bu Ay</h3><div class="stats-grid">' + tile(mSt.sessions, "Antrenman") + tile(mSt.sets, "Set") + tile(formatDurationLong(mSt.duration), "Süre") + tile(mSt.calories + " kcal", "Kalori") + '</div></div>';
+    html += '<div class="stats-card"><h3>Kas Grubu · Bu Ay</h3>' + renderDonut(mSt.groups) + '</div>';
+    html += '<div class="stats-card"><h3>Tüm Zamanlar</h3><div class="stats-grid">' + tile(aSt.sessions, "Antrenman") + tile(aSt.sets, "Set") + tile(formatDurationLong(aSt.duration), "Süre") + tile(formatVolume(aSt.volume), "Toplam Hacim") + '</div></div>';
+    $("#statsContent").innerHTML = html;
+    $("#openCardBtn").addEventListener("click", openCardModal);
+  }
+
+  var currentCardBlob = null, currentCardDataURL = null;
+  function openCardModal() {
+    var now = today();
+    $("#cardStart").value = toISO(new Date(now.getTime() - 6 * 86400000));
+    $("#cardEnd").value = toISO(now);
+    $("#cardPreviewWrap").style.display = "none";
+    $("#cardActions").style.display = "none";
+    $("#cardModal").classList.add("show");
+  }
+  $("#cardClose").addEventListener("click", function () { $("#cardModal").classList.remove("show"); });
+  $("#cardGenerate").addEventListener("click", function () {
+    var s = $("#cardStart").value, e = $("#cardEnd").value;
+    if (!s || !e || s > e) { showToast("Geçerli tarih aralığı seç"); return; }
+    var canvas = document.createElement("canvas");
+    drawCard(canvas, s, e);
+    currentCardDataURL = canvas.toDataURL("image/png");
+    $("#cardPreview").src = currentCardDataURL;
+    $("#cardPreviewWrap").style.display = "block";
+    $("#cardActions").style.display = "flex";
+    canvas.toBlob(function (b) { currentCardBlob = b; }, "image/png");
+  });
+  $("#cardShare").addEventListener("click", function () {
+    if (!currentCardBlob) return;
+    var file = new File([currentCardBlob], "antrenman.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: "Antrenman Özeti" }).catch(function () {});
+    } else showToast("Paylaşım desteklenmiyor, İndir butonunu kullan");
+  });
+  $("#cardDownload").addEventListener("click", function () {
+    if (!currentCardDataURL) return;
+    var a = document.createElement("a");
+    a.href = currentCardDataURL;
+    a.download = "antrenman-ozeti.png";
+    a.click();
+  });
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  function drawCard(canvas, startISO, endISO) {
+    var W = 1080, H = 1920;
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    var bgTop = isDark ? "#0F0F14" : "#FFFFFF", bgBottom = isDark ? "#000000" : "#F2F2F7";
+    var text = isDark ? "#FFFFFF" : "#000000", text3 = "#8E8E93";
+    var sep = isDark ? "rgba(255,255,255,0.10)" : "rgba(60,60,67,0.12)";
+    var accent = isDark ? "#0A84FF" : "#007AFF";
+
+    var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, bgTop); bgGrad.addColorStop(1, bgBottom);
+    ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+
+    var pad = 90, stats = collectRangeStats(startISO, endISO);
+    ctx.fillStyle = accent; ctx.fillRect(pad, 90, 100, 8);
+    ctx.fillStyle = text3; ctx.font = "700 24px -apple-system, sans-serif";
+    ctx.fillText("ANTRENMAN ÖZETİ", pad, 170);
+
+    var s = fromISO(startISO), e = fromISO(endISO);
+    ctx.fillStyle = text; ctx.font = "800 72px -apple-system, sans-serif";
+    ctx.fillText(s.getDate() + " " + MONTHS_TR[s.getMonth()] + " — " + e.getDate() + " " + MONTHS_TR[e.getMonth()], pad, 280);
+
+    ctx.fillStyle = sep; ctx.fillRect(pad, 340, W - pad * 2, 2);
+
+    var tiles = [
+      { label: "ANTRENMAN", value: String(stats.sessions) },
+      { label: "SET", value: String(stats.sets) },
+      { label: "SÜRE", value: formatDurationLong(stats.duration) }
+    ];
+    if (stats.calories > 0) tiles.push({ label: "KALORİ", value: stats.calories + " kcal" });
+
+    var colW = (W - pad * 2) / tiles.length;
+    tiles.forEach(function (t, i) {
+      var cx = pad + colW * i + colW / 2;
+      ctx.textAlign = "center";
+      ctx.fillStyle = text3; ctx.font = "700 20px -apple-system, sans-serif"; ctx.fillText(t.label, cx, 430);
+      ctx.fillStyle = text; ctx.font = "800 54px -apple-system, sans-serif"; ctx.fillText(t.value, cx, 505);
+    });
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = sep; ctx.fillRect(pad, 570, W - pad * 2, 2);
+    ctx.fillStyle = text3; ctx.font = "700 24px -apple-system, sans-serif"; ctx.fillText("KAS GRUBU DAĞILIMI", pad, 640);
+
+    var gTotal = 0, maxG = 0;
+    GROUP_ORDER.forEach(function (g) { var v = stats.groups[g] || 0; gTotal += v; if (v > maxG) maxG = v; });
+    GROUP_ORDER.forEach(function (g, i) {
+      var c = stats.groups[g] || 0, pct = gTotal > 0 ? Math.round((c / gTotal) * 100) : 0;
+      var y = 700 + i * 70;
+      ctx.fillStyle = GROUP_COLORS[g]; ctx.beginPath(); ctx.arc(pad + 10, y + 8, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = text; ctx.font = "600 28px -apple-system, sans-serif"; ctx.fillText(g, pad + 35, y + 18);
+      var bx = pad + 240, bw = W - pad * 2 - 440;
+      ctx.fillStyle = sep; roundedRect(ctx, bx, y, bw, 14, 7); ctx.fill();
+      if (c > 0 && maxG > 0) {
+        ctx.fillStyle = GROUP_COLORS[g]; roundedRect(ctx, bx, y, Math.max((c / maxG) * bw, 14), 14, 7); ctx.fill();
+      }
+      ctx.textAlign = "right"; ctx.fillStyle = text; ctx.font = "700 24px -apple-system, sans-serif";
+      ctx.fillText(c + " · " + pct + "%", W - pad, y + 18); ctx.textAlign = "left";
+    });
+
+    var streak = calculateStreak();
+    if (streak > 0) {
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#FF9500"; ctx.font = "800 36px -apple-system, sans-serif";
+      ctx.fillText("🔥 " + streak + " GÜN STREAK", W / 2, 1480);
+    }
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = text; ctx.font = "800 52px -apple-system, sans-serif";
+    ctx.fillText(state.name || "Antrenman", W / 2, H - 150);
+    ctx.fillStyle = text3; ctx.font = "500 22px -apple-system, sans-serif";
+    ctx.fillText("antrenman günlüğü", W / 2, H - 105);
+  }
+
+  // 5. AYARLAR
+  function renderSettings() {
+    var html = '<div class="settings-group-title">Profil & Hesap</div><div class="settings-group">';
+    html += '<div class="settings-row"><div class="label-wrap"><span>İsim Soyisim</span></div><input type="text" id="settingsName" value="' + escapeHtml(state.name || "") + '"></div>';
+    html += '<div class="settings-row"><div class="label-wrap"><span>Program Başlangıç Pazartesi</span></div><input type="date" id="settingsDate" value="' + (state.startDate || toISO(normalizeToMonday(today()))) + '"></div>';
+    html += '<button class="settings-row primary" id="saveProfileBtn"><span>Değişiklikleri Kaydet</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '</div>';
+
+    html += '<div class="settings-group-title">Hazır Şablon & Yedek</div><div class="settings-group">';
+    html += '<button class="settings-row primary" id="addDefaultProgBtn"><div class="label-wrap"><span>Varsayılan Şablonu Kütüphaneye Ekle</span><span class="sub">Mevcut programlarını silmeden yeni bir kayıt olarak ekler</span></div><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '<button class="settings-row primary" id="backupBtn"><div class="label-wrap"><span>JSON Yedek İndir</span><span class="sub">Tüm programlarını ve geçmişini cihazına kaydet</span></div><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>';
+    html += '</div>';
+
+    html += '<div class="settings-group-title">Oturum</div><div class="settings-group">';
+    html += '<div class="info-row"><span>Hesap</span><span class="value">' + escapeHtml(currentUser ? currentUser.email : "") + '</span></div>';
+    html += '<button class="settings-row danger" id="logoutBtn"><span>Çıkış Yap</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '</div>';
+
+    $("#settingsContent").innerHTML = html;
+
+    $("#saveProfileBtn").addEventListener("click", function () {
+      var n = $("#settingsName").value.trim(), d = $("#settingsDate").value;
+      if (!n || !d) { showToast("İsim ve tarih gerekli"); return; }
+      state.name = n;
+      state.startDate = toISO(normalizeToMonday(fromISO(d)));
+      saveToCloud();
+      renderHeader();
+      showToast("Profil kaydedildi");
+    });
+
+    $("#addDefaultProgBtn").addEventListener("click", function () {
+      var newId = "prog_" + Date.now();
+      state.library.list.push({
+        id: newId,
+        name: "5 Günlük Şablon (" + state.library.list.length + ")",
+        days: JSON.parse(JSON.stringify(DEFAULT_DAYS))
+      });
+      state.library.activeId = newId;
+      saveToCloud();
+      renderHeader();
+      showToast("Şablon kütüphaneye eklendi ve aktif edildi");
+    });
+
+    $("#backupBtn").addEventListener("click", function () {
+      var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "antrenman-yedek-" + toISO(today()) + ".json";
+      a.click();
+      showToast("Yedek indirildi");
+    });
+
+    $("#logoutBtn").addEventListener("click", async function () {
+      await sb.auth.signOut();
+      currentUser = null;
+      $("#authScreen").classList.add("show");
+    });
+  }
+
+  function checkCelebration(dateISO, dayKey) {
+    var p = getDayProgress(dateISO, dayKey);
+    if (p.total > 0 && p.done === p.total) {
+      if (state.sessions[dateISO] && state.sessions[dateISO].__celebrated) return;
+      ensureSession(dateISO).__celebrated = true;
+      saveToCloud();
+      var colors = ["#007AFF", "#34C759", "#FFCC00"];
+      for (var i = 0; i < 30; i++) {
+        var piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "%";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 0.3) + "s";
+        $("#celebration").appendChild(piece);
+        setTimeout(function (el) { if (el.parentNode) el.parentNode.removeChild(el); }, 2500, piece);
+      }
+      showToast("🎉 " + dayKey + " tamamlandı!");
+    }
+  }
+
+  function renderAll() {
+    renderHeader();
+    if (currentView === "workout") renderWorkout();
+    if (currentView === "program") renderProgramEditor();
+    if (currentView === "calendar") renderCalendar();
+    if (currentView === "stats") renderStats();
+    if (currentView === "settings") renderSettings();
+  }
+
+  sb.auth.onAuthStateChange(function (_event, session) {
+    if (session && session.user) {
+      currentUser = session.user;
+      $("#authScreen").classList.remove("show");
+      loadFromCloud();
+    } else {
+      currentUser = null;
+      $("#authScreen").classList.add("show");
+    }
+  });
+})();
+</script>
+</body>
+</html>
