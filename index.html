@@ -28,6 +28,7 @@
     --warning: #F59E0B;
     --danger: #EF4444;
     --purple: #8B5CF6;
+    --purple-grad: linear-gradient(135deg, #8B5CF6, #6366F1);
     --purple-soft: rgba(139, 92, 246, 0.14);
     --focus: #F59E0B;
     --focus-soft: rgba(245, 158, 11, 0.13);
@@ -57,6 +58,7 @@
     --warning: #FBBF24;
     --danger: #F87171;
     --purple: #A78BFA;
+    --purple-grad: linear-gradient(135deg, #8B5CF6, #6366F1);
     --purple-soft: rgba(167, 139, 250, 0.16);
     --focus: #FBBF24;
     --focus-soft: rgba(251, 191, 36, 0.12);
@@ -228,7 +230,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .header-actions { display: flex; gap: 0.2rem; align-items: center; flex: 0 0 auto; }
+  .header-actions { display: flex; gap: 0.25rem; align-items: center; flex: 0 0 auto; }
   .icon-btn {
     width: 34px; height: 34px;
     border-radius: 10px;
@@ -241,7 +243,7 @@
   .icon-btn:active { background: var(--accent-soft); color: var(--accent); transform: scale(0.92); }
   .icon-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* SEGMENTED TABS (MOBİL OPTİMİZE) */
+  /* SEGMENTED TABS */
   .segmented-wrap { padding: 0.7rem 0.85rem 0.85rem; max-width: 600px; margin: 0 auto; width: 100%; }
   .segmented {
     display: grid;
@@ -355,7 +357,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* KALORİ + SAYAÇ SATIRI (TAŞMA KESİN ENGELLENDİ) */
+  /* KALORİ + SAYAÇ SATIRI */
   .meta-row {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -472,30 +474,31 @@
   }
   .ex-row.focus.done::before { background: var(--success); }
 
-  /* BİRLEŞİK SÜPER SET BLOK STİLLERİ */
+  /* BİRLEŞİK SÜPER SET BLOK STİLLERİ + ORTAK TUR BUTONLARI */
   .superset-group-block {
     border-bottom: 1px solid var(--separator);
     border-left: 3.5px solid var(--purple);
-    background: color-mix(in srgb, var(--purple-soft) 24%, var(--surface));
+    background: color-mix(in srgb, var(--purple-soft) 22%, var(--surface));
   }
   .superset-group-block:last-child { border-bottom: none; }
   .superset-group-block.group-all-done { border-left-color: var(--success); }
   .superset-group-header {
-    padding: 0.65rem 0.95rem 0.25rem;
+    padding: 0.7rem 0.95rem 0.45rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   .superset-group-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    padding: 0.18rem 0.55rem;
+    padding: 0.2rem 0.58rem;
     border-radius: 100px;
     background: var(--purple-soft);
     color: var(--purple);
-    font-size: 0.68rem;
+    font-size: 0.69rem;
     font-weight: 700;
     letter-spacing: 0.02em;
   }
@@ -503,6 +506,56 @@
     background: var(--success-soft);
     color: var(--success);
   }
+
+  /* ORTAK SÜPER SET TUR ŞERİDİ */
+  .superset-master-bar {
+    margin: 0.15rem 0.95rem 0.5rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--purple-soft) 55%, var(--bg));
+    border: 1px solid color-mix(in srgb, var(--purple) 28%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .superset-master-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--purple);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .superset-master-rounds {
+    display: flex;
+    gap: 0.38rem;
+    flex-wrap: wrap;
+  }
+  .ss-round-btn {
+    padding: 0.32rem 0.62rem;
+    border-radius: 9px;
+    border: 1.5px solid color-mix(in srgb, var(--purple) 45%, transparent);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: all 0.18s ease;
+  }
+  .ss-round-btn:active { transform: scale(0.92); }
+  .ss-round-btn.done {
+    background: var(--purple-grad);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(139, 92, 246, 0.35);
+  }
+  .superset-group-block.group-all-done .ss-round-btn.done {
+    background: var(--success);
+    box-shadow: 0 3px 10px rgba(34, 197, 94, 0.3);
+  }
+
   .superset-sub-item {
     padding: 0.6rem 0.95rem 0.85rem;
     position: relative;
@@ -510,6 +563,59 @@
   .superset-sub-item + .superset-sub-item {
     border-top: 1px dashed var(--separator-strong);
   }
+
+  /* SÜRELİ HAREKET İÇİ CANLI KRONOMETRE */
+  .ex-timer-bar {
+    margin-top: 0.62rem;
+    padding: 0.48rem 0.68rem;
+    border-radius: 11px;
+    background: var(--bg);
+    border: 1px solid var(--separator-strong);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .ex-timer-bar.running {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 45%, var(--bg));
+  }
+  .ex-timer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .ex-timer-clock {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .ex-timer-bar.running .ex-timer-clock { color: var(--accent); }
+  .ex-timer-hint {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+  .ex-timer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .ex-timer-btn {
+    padding: 0.34rem 0.68rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.73rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .ex-timer-btn.play { background: var(--accent-grad); color: #fff; }
+  .ex-timer-btn.pause { background: var(--warning); color: #0B0D12; }
+  .ex-timer-btn.reset { background: var(--surface-2); color: var(--text-2); }
+  .ex-timer-btn:active { transform: scale(0.94); }
 
   .ex-top {
     display: flex;
@@ -1143,17 +1249,24 @@
   .btn-action.download { background: var(--surface); color: var(--text); border: 1px solid var(--separator-strong); }
   .btn-action svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
 
+  /* TOAST (BEYAZ NOKTA TAMAMEN TEMİZLENDİ) */
   .toast {
     position: fixed; bottom: calc(1.5rem + var(--safe-bottom)); left: 50%;
-    transform: translateX(-50%) translateY(140%);
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    visibility: hidden;
     background: var(--text); color: var(--bg);
     padding: 0.72rem 1.25rem; border-radius: 100px;
     font-size: 0.84rem; font-weight: 600;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-    transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), visibility 0.25s;
     z-index: 5000; pointer-events: none; white-space: nowrap;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
 
   .celebration { position: fixed; inset: 0; pointer-events: none; z-index: 4999; overflow: hidden; }
   .confetti { position: absolute; width: 6px; height: 6px; border-radius: 50%; top: -10px; animation: confettiFall 1.6s cubic-bezier(0.3, 0.6, 0.6, 1) forwards; }
@@ -1407,7 +1520,7 @@
           <input type="number" id="exSetsInput" min="1" max="15" value="3">
         </div>
         <div class="field">
-          <label>Tekrar / Süre</label>
+          <label>Tekrar / Süre (sn veya dk yazarsan sayaç açılır)</label>
           <input type="text" id="exRepsInput" placeholder="Örn: 8-12 veya 45 sn" value="8-12">
         </div>
       </div>
@@ -1685,6 +1798,106 @@
   var undoStack = [];
   var saveDebounceTimer = null;
 
+  // HAREKET İÇİ SÜRE SAYAÇLARI DURUMU
+  var activeExTimers = {}; // key: dateISO + "|" + activeName -> { targetSec, remSec, running, interval }
+
+  function parseTimedDurationSec(repsStr) {
+    if (!repsStr) return null;
+    var s = String(repsStr).trim().toLowerCase();
+    // Örn: "30-45 sn", "45 sn", "60s", "2 dk", "1.5 dk"
+    var mRange = s.match(/(\d+(?:[.,]\d+)?)\s*-\s*(\d+(?:[.,]\d+)?)\s*(sn|saniye|sec|dk|dakika|min)\b/);
+    if (mRange) {
+      var val = parseFloat(mRange[2].replace(",", "."));
+      var unit = mRange[3];
+      return unit.startsWith("d") || unit.startsWith("m") ? Math.round(val * 60) : Math.round(val);
+    }
+    var mSingle = s.match(/^(\d+(?:[.,]\d+)?)\s*(sn|saniye|sec|dk|dakika|min)\b/);
+    if (mSingle) {
+      var val2 = parseFloat(mSingle[1].replace(",", "."));
+      var unit2 = mSingle[2];
+      return unit2.startsWith("d") || unit2.startsWith("m") ? Math.round(val2 * 60) : Math.round(val2);
+    }
+    return null;
+  }
+
+  function getExTimerState(dateISO, activeName, targetSec) {
+    var key = dateISO + "|" + activeName;
+    if (!activeExTimers[key]) {
+      activeExTimers[key] = { targetSec: targetSec, remSec: targetSec, running: false, interval: null };
+    } else if (!activeExTimers[key].running && activeExTimers[key].targetSec !== targetSec) {
+      activeExTimers[key].targetSec = targetSec;
+      activeExTimers[key].remSec = targetSec;
+    }
+    return activeExTimers[key];
+  }
+
+  window.toggleExTimer = function (dateISO, activeName, targetSec, totalSets) {
+    var key = dateISO + "|" + activeName;
+    var st = getExTimerState(dateISO, activeName, targetSec);
+
+    if (st.running) {
+      clearInterval(st.interval);
+      st.interval = null;
+      st.running = false;
+      renderWorkout();
+      return;
+    }
+
+    // Diğer çalışan hareket sayaçlarını duraklat
+    for (var k in activeExTimers) {
+      if (k !== key && activeExTimers[k].running) {
+        clearInterval(activeExTimers[k].interval);
+        activeExTimers[k].interval = null;
+        activeExTimers[k].running = false;
+      }
+    }
+
+    if (st.remSec <= 0) st.remSec = st.targetSec;
+    st.running = true;
+    renderWorkout();
+
+    st.interval = setInterval(function () {
+      st.remSec--;
+      if (st.remSec <= 0) {
+        clearInterval(st.interval);
+        st.interval = null;
+        st.running = false;
+        st.remSec = st.targetSec;
+
+        // Sıradaki tamamlanmamış ilk seti otomatik işaretle
+        var sess = ensureSession(dateISO);
+        if (!sess.sets[activeName]) sess.sets[activeName] = new Array(totalSets).fill(false);
+        var nextIdx = -1;
+        for (var i = 0; i < totalSets; i++) {
+          if (!sess.sets[activeName][i]) { nextIdx = i; break; }
+        }
+        if (nextIdx >= 0) {
+          pushUndo();
+          sess.sets[activeName][nextIdx] = true;
+          saveToCloud();
+          showToast("⏱ Süre doldu! " + activeName + " (" + (nextIdx + 1) + ". set) tamamlandı");
+        } else {
+          showToast("⏱ Süre doldu!");
+        }
+        if (navigator.vibrate) navigator.vibrate([220, 100, 220]);
+        renderWorkout();
+        renderHeader();
+        checkCelebration(dateISO, getDayKeyForDate(fromISO(dateISO)));
+        return;
+      }
+      var el = document.querySelector('[data-extimer-clock="' + CSS.escape(key) + '"]');
+      if (el) el.textContent = formatRestMMSS(st.remSec);
+    }, 1000);
+  };
+
+  window.resetExTimer = function (dateISO, activeName, targetSec) {
+    var st = getExTimerState(dateISO, activeName, targetSec);
+    if (st.interval) { clearInterval(st.interval); st.interval = null; }
+    st.running = false;
+    st.remSec = st.targetSec;
+    renderWorkout();
+  };
+
   // TEMA YÖNETİMİ
   var THEME_KEY = "antrenman_theme";
   function getInitialTheme() {
@@ -1917,6 +2130,37 @@
     saveToCloud();
   }
 
+  // SÜPER SET ORTAK TUR TAMAMLAMA
+  window.toggleSupersetRound = function (dateISO, groupId, roundIdx) {
+    var dayKey = getDayKeyForDate(fromISO(dateISO));
+    var days = getActiveDays();
+    var prog = days[dayKey];
+    if (!prog || !prog.ex) return;
+
+    var groupItems = prog.ex.filter(function (ex) { return ex.groupId === groupId; })
+      .map(function (def) { return resolveExerciseForDate(dateISO, def); });
+    if (groupItems.length === 0) return;
+
+    var s = ensureSession(dateISO);
+    var allDoneInRound = groupItems.every(function (item) {
+      if (roundIdx >= item.sets) return true;
+      return !!(s.sets[item.activeName] && s.sets[item.activeName][roundIdx]);
+    });
+
+    var targetVal = !allDoneInRound;
+    pushUndo();
+    groupItems.forEach(function (item) {
+      if (roundIdx >= item.sets) return;
+      if (!s.sets[item.activeName]) s.sets[item.activeName] = new Array(item.sets).fill(false);
+      s.sets[item.activeName][roundIdx] = targetVal;
+      if (s.sets[item.activeName].every(function (v) { return !v; })) delete s.sets[item.activeName];
+    });
+    saveToCloud();
+    renderWorkout();
+    renderHeader();
+    checkCelebration(dateISO, dayKey);
+  };
+
   function getDayProgress(dateISO, dayKey) {
     var days = getActiveDays();
     var prog = days[dayKey];
@@ -2018,6 +2262,28 @@
     return blocks;
   }
 
+  function renderTimedExerciseBar(dateISO, ex) {
+    var durSec = parseTimedDurationSec(ex.reps);
+    if (!durSec) return "";
+    var key = dateISO + "|" + ex.activeName;
+    var st = getExTimerState(dateISO, ex.activeName, durSec);
+    var safeDate = escapeHtml(dateISO);
+    var safeName = escapeHtml(ex.activeName).replace(/'/g, "\\'");
+
+    var html = '<div class="ex-timer-bar' + (st.running ? ' running' : '') + '">';
+    html += '<div class="ex-timer-info">';
+    html += '<span class="ex-timer-clock" data-extimer-clock="' + escapeHtml(key) + '">' + formatRestMMSS(st.remSec) + '</span>';
+    html += '<span class="ex-timer-hint">' + (st.running ? 'Süre işliyor...' : 'Bitince set işaretlenir') + '</span>';
+    html += '</div>';
+    html += '<div class="ex-timer-actions">';
+    html += '<button class="ex-timer-btn ' + (st.running ? 'pause' : 'play') + '" onclick="event.stopPropagation(); toggleExTimer(\'' + safeDate + '\', \'' + safeName + '\', ' + durSec + ', ' + ex.sets + ')">' + (st.running ? '❚❚ Duraklat' : '▶ Başlat') + '</button>';
+    if (st.running || st.remSec !== st.targetSec) {
+      html += '<button class="ex-timer-btn reset" onclick="event.stopPropagation(); resetExTimer(\'' + safeDate + '\', \'' + safeName + '\', ' + durSec + ')">↺</button>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
   // 1. ANTRENMAN EKRANI
   function renderWorkout() {
     var dateISO = toISO(selectedDate);
@@ -2055,7 +2321,7 @@
     }
     html += '</div>';
 
-    // KALORİ + SAYAÇ (MOBİL UYUMLU GRID)
+    // KALORİ + SAYAÇ
     var restBtnClass = "rest-pill-btn" + (restTimerInt ? " running" : "");
     var restBtnText = restTimerInt ? formatRestMMSS(restSec) : "Sayaç";
     html += '<div class="meta-row"><div class="meta-tile">';
@@ -2093,7 +2359,11 @@
         for (var k = 0; k < ex.sets; k++) {
           html += '<button class="set' + (sets[k] ? ' done' : '') + '" data-set="' + k + '">' + (k + 1) + '</button>';
         }
-        html += '</div><button class="weight-btn' + (w != null ? ' has-weight' : '') + '" data-weight-btn="1">' + (w != null ? formatWeight(w) + ' kg' : '+ kg') + '</button></div></div>';
+        html += '</div><button class="weight-btn' + (w != null ? ' has-weight' : '') + '" data-weight-btn="1">' + (w != null ? formatWeight(w) + ' kg' : '+ kg') + '</button></div>';
+
+        // Süreli hareket ise hareket içi sayaç göster
+        html += renderTimedExerciseBar(dateISO, ex);
+        html += '</div>';
       } else {
         var resolvedItems = blk.items.map(function (def) { return resolveExerciseForDate(dateISO, def); });
         var allDone = resolvedItems.every(function (r) {
@@ -2101,10 +2371,26 @@
           return st.filter(Boolean).length === r.sets;
         });
 
+        var maxRounds = Math.max.apply(null, resolvedItems.map(function (r) { return r.sets; }));
+
         html += '<div class="superset-group-block' + (allDone ? ' group-all-done' : '') + '">';
         html += '<div class="superset-group-header">';
-        html += '<span class="superset-group-badge">⚡ ' + (blk.items.length === 2 ? 'Süper Set' : 'Devre (' + blk.items.length + ' Hareket)') + ' · Dinlenmeden Geç</span>';
+        html += '<span class="superset-group-badge">⚡ ' + (blk.items.length === 2 ? 'Süper Set' : 'Devre (' + blk.items.length + ' Hareket)') + '</span>';
         html += '</div>';
+
+        // ORTAK TUR TAMAMLAMA ŞERİDİ
+        html += '<div class="superset-master-bar">';
+        html += '<span class="superset-master-label">Ortak Tur:</span>';
+        html += '<div class="superset-master-rounds">';
+        for (var rIdx = 0; rIdx < maxRounds; rIdx++) {
+          var roundComplete = resolvedItems.every(function (item) {
+            if (rIdx >= item.sets) return true;
+            var stArr = (session.sets && session.sets[item.activeName]) || [];
+            return !!stArr[rIdx];
+          });
+          html += '<button class="ss-round-btn' + (roundComplete ? ' done' : '') + '" onclick="toggleSupersetRound(\'' + escapeHtml(dateISO) + '\', \'' + escapeHtml(blk.groupId) + '\', ' + rIdx + ')">' + (rIdx + 1) + '. Tur' + (roundComplete ? ' ✓' : '') + '</button>';
+        }
+        html += '</div></div>';
 
         resolvedItems.forEach(function (ex, subIdx) {
           var sets = (session.sets && session.sets[ex.activeName]) || [];
@@ -2123,7 +2409,10 @@
           for (var k = 0; k < ex.sets; k++) {
             html += '<button class="set' + (sets[k] ? ' done' : '') + '" data-set="' + k + '">' + (k + 1) + '</button>';
           }
-          html += '</div><button class="weight-btn' + (w != null ? ' has-weight' : '') + '" data-weight-btn="1">' + (w != null ? formatWeight(w) + ' kg' : '+ kg') + '</button></div></div>';
+          html += '</div><button class="weight-btn' + (w != null ? ' has-weight' : '') + '" data-weight-btn="1">' + (w != null ? formatWeight(w) + ' kg' : '+ kg') + '</button></div>';
+
+          html += renderTimedExerciseBar(dateISO, ex);
+          html += '</div>';
         });
 
         html += '</div>';
@@ -2203,7 +2492,7 @@
       });
 
       function startPress(e) {
-        if (e.target.classList && (e.target.classList.contains("set") || e.target.classList.contains("weight-btn") || e.target.classList.contains("swap-btn"))) return;
+        if (e.target.closest && (e.target.closest(".set") || e.target.closest(".weight-btn") || e.target.closest(".swap-btn") || e.target.closest(".ex-timer-bar"))) return;
         lpFired = false;
         lpTimer = setTimeout(function () {
           lpFired = true;
@@ -2360,7 +2649,7 @@
           if (isFocus) html += '<span class="focus-pill">★ Odak</span>';
           if (linkedPrev || linkedNext) html += '<span class="ss-index-tag">⚡ Süper Set</span>';
           html += '<span class="group-tag">' + escapeHtml(getMuscleGroup(ex)) + '</span></div>';
-          html += '<div class="prog-ex-meta">' + ex.sets + ' Set × ' + escapeHtml(ex.reps) + ' Tekrar</div></div>';
+          html += '<div class="prog-ex-meta">' + ex.sets + ' Set × ' + escapeHtml(ex.reps) + '</div></div>';
 
           html += '<div class="prog-ex-actions">';
           if (linkedPrev || linkedNext) {
@@ -2854,7 +3143,7 @@
 
   // MODERN DİNLENME KRONOMETRESİ (DİJİTAL HALKA & CANLI PILL)
   var restTimerInt = null, restSec = 90, restTotalSec = 90;
-  var RING_CIRC = 2 * Math.PI * 86; // 540.35
+  var RING_CIRC = 2 * Math.PI * 86;
 
   function formatRestMMSS(sec) {
     var m = String(Math.floor(sec / 60)).padStart(2, "0");
