@@ -786,4 +786,1260 @@
       <button class="icon-btn" id="themeToggle" title="Tema">
         <svg id="themeIcon" viewBox="0 0 24 24"></svg>
       </button>
-      <button class="icon-btn" id
+      <button class="icon-btn" id="undoBtn" title="Geri Al">
+        <svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" title="Ayarlar">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="segmented-wrap">
+  <div class="segmented">
+    <button class="active" data-view="workout">Antrenman</button>
+    <button data-view="program">Programım</button>
+    <button data-view="calendar">Takvim</button>
+    <button data-view="stats">İstatistik</button>
+    <button data-view="settings">Ayarlar</button>
+  </div>
+</div>
+
+<!-- 1. ANTRENMAN GÖRÜNÜMÜ -->
+<div class="view active" id="view-workout">
+  <div class="date-nav">
+    <button class="date-arrow" id="prevDay"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="date-center">
+      <div class="date-main" id="dateMain"></div>
+      <div class="date-sub" id="dateSub"></div>
+    </div>
+    <button class="date-arrow" id="nextDay"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <div id="workoutContent"></div>
+</div>
+
+<!-- 2. PROGRAMIM (DİNAMİK EDİTÖR) GÖRÜNÜMÜ -->
+<div class="view" id="view-program">
+  <div id="programContent"></div>
+</div>
+
+<!-- 3. TAKVİM GÖRÜNÜMÜ -->
+<div class="view" id="view-calendar">
+  <div class="cal-head">
+    <button class="date-arrow" id="prevMonth"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="cal-month" id="calMonthLabel"></div>
+    <button class="date-arrow" id="nextMonth"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot complete"></div> Tamamlandı</div>
+    <div class="legend-item"><div class="legend-dot partial"></div> Devam</div>
+    <div class="legend-item"><div class="legend-dot pending"></div> Başlanmadı</div>
+  </div>
+</div>
+
+<!-- 4. İSTATİSTİK GÖRÜNÜMÜ -->
+<div class="view" id="view-stats">
+  <div id="statsContent"></div>
+</div>
+
+<!-- 5. AYARLAR GÖRÜNÜMÜ -->
+<div class="view" id="view-settings">
+  <div id="settingsContent"></div>
+</div>
+
+<!-- AĞIRLIK SEÇİCİ SHEET -->
+<div class="sheet-modal" id="weightModal">
+  <div class="sheet-box" style="max-height:72vh;">
+    <div class="sheet-head">
+      <div>
+        <h3>Ağırlık Seç</h3>
+        <p id="weightExerciseName">—</p>
+      </div>
+    </div>
+    <div class="weight-list" id="weightList"></div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" id="weightCloseBtn">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- HAREKET EKLE / DÜZENLE SHEET -->
+<div class="sheet-modal" id="exEditorModal">
+  <div class="sheet-box">
+    <div class="sheet-head">
+      <div>
+        <h3 id="exModalTitle">Hareket Ekle</h3>
+        <p id="exModalDaySub">Pazartesi</p>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <input type="hidden" id="editExIdx" value="-1">
+      <div class="field">
+        <label>Hareket Adı</label>
+        <input type="text" id="exNameInput" placeholder="Örn: Incline Dumbbell Press">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
+        <div class="field">
+          <label>Set Sayısı</label>
+          <input type="number" id="exSetsInput" min="1" max="15" value="3">
+        </div>
+        <div class="field">
+          <label>Tekrar / Süre</label>
+          <input type="text" id="exRepsInput" placeholder="Örn: 8-12 veya 45 sn" value="8-12">
+        </div>
+      </div>
+      <div class="field">
+        <label>Kas Grubu (İstatistik Grafiği İçin)</label>
+        <select id="exGroupInput">
+          <option value="İtme">İtme (Göğüs, Omuz, Triceps)</option>
+          <option value="Çekme">Çekme (Sırt, Biceps, Arka Omuz)</option>
+          <option value="Bacak">Bacak (Quad, Hamstring, Kalça)</option>
+          <option value="Core">Core (Karın, Bel)</option>
+          <option value="Kondisyon">Kondisyon / Kardiyo</option>
+        </select>
+      </div>
+      <div class="field" style="display:flex; align-items:center; gap:0.6rem; padding-top:0.35rem;">
+        <input type="checkbox" id="exFocusInput" style="width:20px; height:20px; accent-color:var(--accent);">
+        <label for="exFocusInput" style="margin:0; font-size:0.88rem; color:var(--text);">★ Günün Ana (Odak) Hareketi Yap</label>
+      </div>
+      <div class="field" id="exFocusNoteWrap" style="display:none;">
+        <label>Odak Hareket Notu</label>
+        <textarea id="exFocusNoteInput" rows="2" placeholder="Örn: Form bozulmadan son 1-2 tekrar zorla, 2-3 dk dinlen."></textarea>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" id="exModalCancel">İptal</button>
+      <button class="btn-save" id="exModalSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- SET ARASI DİNLENME SAYACI SHEET -->
+<div class="sheet-modal" id="restTimerModal">
+  <div class="sheet-box" style="max-width:380px; border-radius:24px; margin:auto;">
+    <div class="sheet-head">
+      <div><h3>Dinlenme Sayacı</h3><p>Set arası toparlanma süresi</p></div>
+    </div>
+    <div class="sheet-body" style="text-align:center;">
+      <div id="restClockDisplay" style="font-size:3.2rem; font-weight:800; font-variant-numeric:tabular-nums; color:var(--accent); margin:0.75rem 0;">01:30</div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.4rem; margin-bottom:0.75rem;">
+        <button class="btn-cancel" style="padding:0.6rem 0; border-radius:10px; font-size:0.8rem; font-weight:600;" onclick="startRestCountdown(45)">45 sn</button>
+        <button class="btn-cancel" style="padding:0.6rem 0; border-radius:10px; font-size:0.8rem; font-weight:600;" onclick="startRestCountdown(60)">60 sn</button>
+        <button class="btn-cancel" style="padding:0.6rem 0; border-radius:10px; font-size:0.8rem; font-weight:600;" onclick="startRestCountdown(90)">90 sn</button>
+        <button class="btn-cancel" style="padding:0.6rem 0; border-radius:10px; font-size:0.8rem; font-weight:600;" onclick="startRestCountdown(150)">2.5 dk</button>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="stopRestCountdown()">Sıfırla</button>
+      <button class="btn-save" onclick="closeRestModal()">Gizle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANTRENMAN PAYLAŞIM KARTI MODAL -->
+<div class="sheet-modal" id="cardModal">
+  <div class="sheet-box" style="max-height:92vh;">
+    <div class="sheet-head">
+      <div><h3>Antrenman Kartı</h3><p>Instagram Story formatında özet</p></div>
+      <button class="icon-btn" id="cardClose"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="card-date-row">
+        <div class="field"><label>Başlangıç</label><input type="date" id="cardStart"></div>
+        <div class="field"><label>Bitiş</label><input type="date" id="cardEnd"></div>
+      </div>
+      <button class="btn-primary" id="cardGenerate">Kartı Oluştur</button>
+      <div class="card-preview-wrap" id="cardPreviewWrap" style="display:none;">
+        <img class="card-preview" id="cardPreview" alt="Antrenman kartı">
+      </div>
+    </div>
+    <div class="sheet-foot" id="cardActions" style="display:none;">
+      <button class="btn-action share" id="cardShare">
+        <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Paylaş
+      </button>
+      <button class="btn-action download" id="cardDownload">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        İndir
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="celebration" id="celebration"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // SUPABASE BAĞLANTISI
+  var SUPABASE_URL = "https://aimqmhnutgzycnrajbrq.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_5tiaAs3wr9kxdIGBVatryw_X5mu9IRm";
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var WEEK_DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+  var MONTHS_TR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  var DAYS_TR = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+  var WEEK_HEADERS = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+
+  var GROUP_COLORS = {
+    "İtme": "#FF3B30", "Çekme": "#007AFF", "Bacak": "#34C759",
+    "Core": "#FF9500", "Kondisyon": "#AF52DE"
+  };
+  var GROUP_ORDER = ["İtme", "Çekme", "Bacak", "Core", "Kondisyon"];
+
+  // SENİN MEVCUT VARSAYILAN PROGRAMIN (Şablon olarak tek tıkla yüklenebilir)
+  var DEFAULT_PROGRAM = {
+    "Pazartesi": {
+      rest: false,
+      focus: "Bench Press",
+      focusNote: "Bugünün ana hareketi. Ağırlığı form bozulmadan son 1-2 tekrar zorlanacak şekilde seç, set aralarını 2-3 dk tut.",
+      ex: [
+        { name: "Bench Press", sets: 4, reps: "6-8", group: "İtme" },
+        { name: "Row", sets: 4, reps: "6", group: "Çekme" },
+        { name: "Hip Thrust", sets: 3, reps: "8-10", group: "Bacak" },
+        { name: "OHP", sets: 3, reps: "8", group: "İtme" },
+        { name: "Lat Pulldown", sets: 3, reps: "10", group: "Çekme" },
+        { name: "Hanging Knee Raise", sets: 3, reps: "10", group: "Core" }
+      ]
+    },
+    "Salı": {
+      rest: false,
+      ex: [
+        { name: "Barfiks + Şınav", sets: 5, reps: "2+4", group: "Çekme" },
+        { name: "Plate Halo", sets: 3, reps: "10", group: "Core" },
+        { name: "Plate Speed Punch", sets: 3, reps: "10", group: "Kondisyon" },
+        { name: "Plate Burpee", sets: 3, reps: "4", group: "Kondisyon" },
+        { name: "Plate Swing", sets: 3, reps: "12", group: "Bacak" },
+        { name: "Plate Wood Chop", sets: 3, reps: "10", group: "Core" },
+        { name: "Plate Russian Twist", sets: 3, reps: "10", group: "Core" },
+        { name: "Kum Torbası", sets: 3, reps: "2 dk", group: "Kondisyon" }
+      ],
+      notes: [{
+        title: "Kum Torbası Rutini",
+        items: ["3 tur × 2 dk, tur arası 60 sn", "0-30 sn: Jab + Cross", "30-60 sn: Hook + Uppercut", "60-90 sn: Diz Vuruşu", "90-120 sn: Serbest Kombinasyon"]
+      }]
+    },
+    "Çarşamba": {
+      rest: false,
+      focus: "Squat",
+      focusNote: "Bugünün ana hareketi. Box veya kontrollü tempo, bel nötr. Ağırlığı form bozulmadan son 1-2 tekrar zorlanacak şekilde seç.",
+      ex: [
+        { name: "Squat", sets: 4, reps: "6-8", group: "Bacak" },
+        { name: "Incline Bench", sets: 3, reps: "10", group: "İtme" },
+        { name: "Landmine Row", sets: 3, reps: "10", group: "Çekme" },
+        { name: "Lat Raise", sets: 3, reps: "10", group: "İtme" },
+        { name: "Face Pull", sets: 3, reps: "15", group: "Çekme" },
+        { name: "Cable Crunch", sets: 3, reps: "12", group: "Core" }
+      ]
+    },
+    "Perşembe": {
+      rest: false,
+      ex: [
+        { name: "Barfiks + Şınav", sets: 5, reps: "2+4", group: "Çekme" },
+        { name: "Plate Halo", sets: 3, reps: "10", group: "Core" },
+        { name: "Plate Speed Punch", sets: 3, reps: "10", group: "Kondisyon" },
+        { name: "Plate Burpee", sets: 3, reps: "4", group: "Kondisyon" },
+        { name: "Plate Swing", sets: 3, reps: "12", group: "Bacak" },
+        { name: "Plate Wood Chop", sets: 3, reps: "10", group: "Core" },
+        { name: "Plate Russian Twist", sets: 3, reps: "10", group: "Core" },
+        { name: "Kum Torbası", sets: 3, reps: "2 dk", group: "Kondisyon" }
+      ],
+      notes: [{
+        title: "Kum Torbası Rutini",
+        items: ["3 tur × 2 dk, tur arası 60 sn", "0-30 sn: Jab + Cross", "30-60 sn: Hook + Uppercut", "60-90 sn: Diz Vuruşu", "90-120 sn: Serbest Kombinasyon"]
+      }]
+    },
+    "Cuma": {
+      rest: false,
+      focus: "OHP",
+      focusNote: "Bugünün ana hareketi. Omuz ve core'u sıkı tut, bel nötr. Gövdeyi geriye yatırmadan bar'ı yukarı it.",
+      ex: [
+        { name: "OHP", sets: 4, reps: "6-8", group: "İtme" },
+        { name: "Row", sets: 4, reps: "6", group: "Çekme" },
+        { name: "Lat Pulldown / Pull-up", sets: 3, reps: "8-10", group: "Çekme" },
+        { name: "Bench Press", sets: 3, reps: "8", group: "İtme" },
+        { name: "Plate Front Raise", sets: 3, reps: "10", group: "İtme" },
+        { name: "RDL", sets: 3, reps: "8-10", group: "Bacak" },
+        { name: "Plank", sets: 3, reps: "30-45 sn", group: "Core" }
+      ]
+    },
+    "Cumartesi": { rest: true, ex: [] },
+    "Pazar": { rest: true, ex: [] }
+  };
+
+  var DEFAULT_NOTES = [
+    "Isınma: Bisiklet 5 dk + dinamik açma 2 dk",
+    "Set arası: Büyük hareketler 2-3 dk, izole 60-90 sn",
+    "Plate devresinde hareketler arası 30-45 sn"
+  ];
+
+  // UYGULAMA DURUMU
+  var currentUser = null;
+  var authMode = "login";
+  var state = {
+    name: "",
+    startDate: null,
+    program: JSON.parse(JSON.stringify(DEFAULT_PROGRAM)),
+    generalNotes: DEFAULT_NOTES.slice(),
+    sessions: {},
+    lastBackup: null
+  };
+
+  var $ = function (s) { return document.querySelector(s); };
+  var currentView = "workout";
+  var selectedDate = today();
+  var editorDay = "Pazartesi";
+  var calendarMonth = new Date(today().getFullYear(), today().getMonth(), 1);
+  var timerInterval = null;
+  var undoStack = [];
+  var saveDebounceTimer = null;
+
+  // TEMA YÖNETİMİ
+  var THEME_KEY = "antrenman_theme";
+  function getInitialTheme() {
+    var saved = localStorage.getItem(THEME_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+    return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#000000" : "#F2F2F7");
+    var icon = $("#themeIcon");
+    if (icon) {
+      icon.innerHTML = theme === "dark"
+        ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'
+        : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    }
+  }
+  applyTheme(getInitialTheme());
+  $("#themeToggle").addEventListener("click", function () {
+    applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+
+  // YARDIMCI TARİH & FORMAT FONKSİYONLARI
+  function toISO(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fromISO(s) {
+    var p = s.split("-");
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function normalizeToMonday(d) {
+    var t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var day = t.getDay();
+    t.setDate(t.getDate() - (day === 0 ? 6 : day - 1));
+    return t;
+  }
+  function daysBetween(a, b) { return Math.round((b.getTime() - a.getTime()) / 86400000); }
+  function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function formatDateTR(d) { return DAYS_TR[d.getDay()] + ", " + d.getDate() + " " + MONTHS_TR[d.getMonth()]; }
+  function formatDuration(sec) {
+    if (!sec && sec !== 0) return "--:--";
+    sec = Math.max(0, Math.floor(sec));
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return h > 0 ? h + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0") : m + ":" + String(s).padStart(2, "0");
+  }
+  function formatDurationLong(sec) {
+    if (!sec) return "0 dk";
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+    return h > 0 ? h + "s " + m + "dk" : m + " dk";
+  }
+  function formatWeight(w) { return w == null ? null : (w === Math.floor(w) ? String(w) : w.toFixed(1).replace(/\.0$/, "")); }
+  function formatVolume(kg) { return kg <= 0 ? "0" : (kg < 1000 ? Math.round(kg) + " kg" : (kg / 1000).toFixed(1).replace(".0", "") + " t"); }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  var toastTimer = null;
+  function showToast(msg) {
+    var t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+
+  // BULUT SENKRONİZASYONU (SUPABASE)
+  function saveToCloud() {
+    if (!currentUser) return;
+    var dot = $("#syncDot");
+    if (dot) dot.classList.add("syncing");
+    clearTimeout(saveDebounceTimer);
+    saveDebounceTimer = setTimeout(async function () {
+      var payload = {
+        user_id: currentUser.id,
+        display_name: state.name,
+        start_date: state.startDate,
+        program: state.program,
+        general_notes: state.generalNotes,
+        sessions: state.sessions,
+        updated_at: new Date().toISOString()
+      };
+      var { error } = await sb.from("user_fitness_data").upsert(payload);
+      if (dot) dot.classList.remove("syncing");
+      if (error) showToast("Senkronizasyon hatası: " + error.message);
+    }, 400);
+  }
+
+  async function loadFromCloud() {
+    if (!currentUser) return;
+    var { data, error } = await sb.from("user_fitness_data").select("*").eq("user_id", currentUser.id).maybeSingle();
+    if (data) {
+      state.name = data.display_name || currentUser.email.split("@")[0];
+      state.startDate = data.start_date || toISO(normalizeToMonday(today()));
+      state.program = (data.program && Object.keys(data.program).length) ? data.program : JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+      state.generalNotes = Array.isArray(data.general_notes) ? data.general_notes : DEFAULT_NOTES.slice();
+      state.sessions = data.sessions || {};
+    } else {
+      // İlk kez giriş yapan kullanıcıya başlangıç profili oluştur
+      var regName = $("#regNameInput").value.trim();
+      state.name = regName || currentUser.email.split("@")[0];
+      state.startDate = toISO(normalizeToMonday(today()));
+      state.program = JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+      state.generalNotes = DEFAULT_NOTES.slice();
+      state.sessions = {};
+      saveToCloud();
+    }
+    renderAll();
+  }
+
+  // AUTH İŞLEMLERİ
+  $("#tabLogin").addEventListener("click", function () {
+    authMode = "login";
+    $("#tabLogin").classList.add("active");
+    $("#tabRegister").classList.remove("active");
+    $("#regNameField").style.display = "none";
+    $("#authSubmitBtn").textContent = "Giriş Yap";
+  });
+  $("#tabRegister").addEventListener("click", function () {
+    authMode = "register";
+    $("#tabRegister").classList.add("active");
+    $("#tabLogin").classList.remove("active");
+    $("#regNameField").style.display = "block";
+    $("#authSubmitBtn").textContent = "Hesap Oluştur";
+  });
+
+  $("#authSubmitBtn").addEventListener("click", async function () {
+    var email = $("#authEmail").value.trim();
+    var password = $("#authPass").value;
+    if (!email || password.length < 6) { showToast("Geçerli e-posta ve en az 6 haneli şifre gir"); return; }
+    var btn = $("#authSubmitBtn");
+    btn.disabled = true;
+    btn.textContent = "Bekleyin...";
+    try {
+      if (authMode === "login") {
+        var res = await sb.auth.signInWithPassword({ email: email, password: password });
+        if (res.error) throw res.error;
+      } else {
+        var res2 = await sb.auth.signUp({ email: email, password: password });
+        if (res2.error) throw res2.error;
+        showToast("Hesabın oluşturuldu!");
+      }
+    } catch (err) {
+      showToast(err.message || "Giriş başarısız");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = authMode === "login" ? "Giriş Yap" : "Hesap Oluştur";
+    }
+  });
+
+  // PROGRAM & OTURUM HESAPLAMALARI
+  function getDayKeyForDate(date) {
+    if (!state.startDate) return "Pazartesi";
+    var diff = daysBetween(fromISO(state.startDate), date);
+    var idx = ((diff % 7) + 7) % 7;
+    return WEEK_DAYS[idx];
+  }
+  function getMuscleGroup(exObj) {
+    if (exObj.group) return exObj.group;
+    var n = exObj.name.toLowerCase();
+    if (n.indexOf("bench") >= 0 || n.indexOf("ohp") >= 0 || n.indexOf("raise") >= 0 || n.indexOf("şınav") >= 0) return "İtme";
+    if (n.indexOf("row") >= 0 || n.indexOf("pull") >= 0 || n.indexOf("barfiks") >= 0 || n.indexOf("curl") >= 0) return "Çekme";
+    if (n.indexOf("squat") >= 0 || n.indexOf("rdl") >= 0 || n.indexOf("hip") >= 0 || n.indexOf("swing") >= 0 || n.indexOf("leg") >= 0) return "Bacak";
+    if (n.indexOf("plank") >= 0 || n.indexOf("crunch") >= 0 || n.indexOf("twist") >= 0 || n.indexOf("chop") >= 0 || n.indexOf("halo") >= 0) return "Core";
+    return "Kondisyon";
+  }
+
+  function getSession(dateISO) { return state.sessions[dateISO] || {}; }
+  function ensureSession(dateISO) {
+    if (!state.sessions[dateISO]) state.sessions[dateISO] = { sets: {}, weights: {} };
+    if (!state.sessions[dateISO].sets) state.sessions[dateISO].sets = {};
+    if (!state.sessions[dateISO].weights) state.sessions[dateISO].weights = {};
+    return state.sessions[dateISO];
+  }
+  function pushUndo() {
+    undoStack.push(JSON.stringify(state.sessions));
+    if (undoStack.length > 20) undoStack.shift();
+  }
+  function toggleSet(dateISO, exName, setIdx, totalSets) {
+    pushUndo();
+    var s = ensureSession(dateISO);
+    if (!s.sets[exName]) s.sets[exName] = new Array(totalSets).fill(false);
+    s.sets[exName][setIdx] = !s.sets[exName][setIdx];
+    if (s.sets[exName].every(function (v) { return !v; })) delete s.sets[exName];
+    saveToCloud();
+  }
+  function markAllSets(dateISO, exName, totalSets, value) {
+    pushUndo();
+    var s = ensureSession(dateISO);
+    s.sets[exName] = new Array(totalSets).fill(!!value);
+    if (!value) delete s.sets[exName];
+    saveToCloud();
+  }
+  function setExerciseWeight(dateISO, exName, value) {
+    pushUndo();
+    var s = ensureSession(dateISO);
+    if (value == null) delete s.weights[exName];
+    else s.weights[exName] = value;
+    saveToCloud();
+  }
+
+  function getDayProgress(dateISO, dayKey) {
+    var prog = state.program[dayKey];
+    if (!prog || prog.rest || !prog.ex) return { total: 0, done: 0 };
+    var total = 0, done = 0;
+    prog.ex.forEach(function (ex) {
+      total += ex.sets;
+      var arr = (getSession(dateISO).sets && getSession(dateISO).sets[ex.name]) || [];
+      for (var i = 0; i < ex.sets; i++) if (arr[i]) done++;
+    });
+    return { total: total, done: done };
+  }
+
+  function calculateStreak() {
+    if (!state.startDate) return 0;
+    var t = today(), start = fromISO(state.startDate), d = new Date(t);
+    var todayKey = getDayKeyForDate(t), todayProg = state.program[todayKey];
+    var todayISO = toISO(t), startFromToday = false;
+    if (!todayProg || todayProg.rest) startFromToday = true;
+    else {
+      var s = state.sessions[todayISO];
+      if (s && s.sets) for (var k in s.sets) if (s.sets[k] && s.sets[k].some(Boolean)) { startFromToday = true; break; }
+    }
+    if (!startFromToday) d.setDate(d.getDate() - 1);
+    var streak = 0, guard = 0;
+    while (guard++ < 365 && d.getTime() >= start.getTime()) {
+      var iso = toISO(d), dk = getDayKeyForDate(d), dp = state.program[dk];
+      if (!dp || dp.rest) streak++;
+      else {
+        var ss = state.sessions[iso], hasAny = false;
+        if (ss && ss.sets) for (var k2 in ss.sets) if (ss.sets[k2] && ss.sets[k2].some(Boolean)) { hasAny = true; break; }
+        if (hasAny) streak++; else break;
+      }
+      d.setDate(d.getDate() - 1);
+    }
+    return streak;
+  }
+
+  // NAVİGASYON
+  document.querySelectorAll(".segmented button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      currentView = btn.dataset.view;
+      document.querySelectorAll(".segmented button").forEach(function (b) { b.classList.toggle("active", b === btn); });
+      document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("active", v.id === "view-" + currentView); });
+      renderAll();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  $("#undoBtn").addEventListener("click", function () {
+    if (!undoStack.length) { showToast("Geri alınacak işlem yok"); return; }
+    state.sessions = JSON.parse(undoStack.pop());
+    saveToCloud();
+    renderAll();
+    showToast("Geri alındı");
+  });
+
+  $("#settingsBtn").addEventListener("click", function () {
+    document.querySelector('.segmented button[data-view="settings"]').click();
+  });
+
+  $("#prevDay").addEventListener("click", function () { selectedDate = new Date(selectedDate.getTime() - 86400000); renderWorkout(); });
+  $("#nextDay").addEventListener("click", function () { selectedDate = new Date(selectedDate.getTime() + 86400000); renderWorkout(); });
+  $("#prevMonth").addEventListener("click", function () { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1); renderCalendar(); });
+  $("#nextMonth").addEventListener("click", function () { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1); renderCalendar(); });
+
+  function renderHeader() {
+    $("#headerName").textContent = state.name || "Antrenman";
+    var st = calculateStreak();
+    $("#headerSub").textContent = st > 0 ? "🔥 " + st + " gün streak" : "Programı takip et";
+  }
+
+  // 1. ANTRENMAN EKRANI RENDER
+  function renderWorkout() {
+    var dateISO = toISO(selectedDate);
+    var dayKey = getDayKeyForDate(selectedDate);
+    var prog = state.program[dayKey] || { rest: true, ex: [] };
+
+    $("#dateMain").textContent = formatDateTR(selectedDate);
+    var diff = daysBetween(today(), selectedDate);
+    var rel = diff === 0 ? "Bugün" : (diff === -1 ? "Dün" : (diff === 1 ? "Yarın" : (diff < 0 ? Math.abs(diff) + " gün önce" : diff + " gün sonra")));
+    var subText = (!prog.rest ? dayKey + " · " : "") + rel;
+    if (dateISO !== toISO(today())) subText += ' · <span class="today-action" id="goToday">Bugüne dön</span>';
+    $("#dateSub").innerHTML = subText;
+    var gt = $("#goToday");
+    if (gt) gt.addEventListener("click", function () { selectedDate = today(); renderWorkout(); });
+
+    if (prog.rest || !prog.ex || prog.ex.length === 0) {
+      $("#workoutContent").innerHTML = '<div class="rest-card"><div class="moon">🌙</div><h3>' + (prog.rest ? 'Dinlenme Günü' : 'Hareket Eklenmemiş') + '</h3><p>' + (prog.rest ? 'Bugün antrenman yok. İyi dinlen!' : 'Bu gün için henüz hareket yok. "Programım" sekmesinden ekleyebilirsin.') + '</p></div>';
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      return;
+    }
+
+    var session = getSession(dateISO);
+    var pStats = getDayProgress(dateISO, dayKey);
+    var isRunning = !!(session.startedAt && !session.endedAt);
+    var duration = isRunning ? Math.floor((Date.now() - session.startedAt) / 1000) : (session.duration || 0);
+
+    var html = '<div class="session-block">';
+    if (!session.startedAt) {
+      html += '<button class="btn-session start" id="startSessionBtn"><svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20"/></svg>Antrenmanı Başlat</button>';
+    } else if (isRunning) {
+      html += '<div class="session-running"><div class="timer-display" id="liveTimer">' + formatDuration(duration) + '</div><button class="btn-session end" id="endSessionBtn"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>Bitir</button></div>';
+    } else {
+      html += '<div class="session-done">✓ ' + formatDuration(duration) + ' tamamlandı</div>';
+    }
+    html += '</div>';
+
+    // Kalori + Set Arası Dinlenme Sayacı Butonu
+    html += '<div class="meta-row"><div class="meta-tile">';
+    html += '<svg viewBox="0 0 24 24"><path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 1-3s1 2 3 2c0 0-2-4 0-7z"/></svg>';
+    html += '<label>Kalori</label><input type="number" id="calorieInput" inputmode="numeric" value="' + (session.calories || "") + '" placeholder="0"><span class="unit">kcal</span>';
+    html += '</div><button class="rest-pill-btn" onclick="openRestModal()">⏱ <span id="restPillLabel">Sayaç</span></button></div>';
+
+    if (prog.focus && prog.focusNote) {
+      html += '<div class="focus-card"><span class="star">★</span><div><strong>Odak · ' + escapeHtml(prog.focus) + '</strong>' + escapeHtml(prog.focusNote) + '</div></div>';
+    }
+
+    html += '<div class="section-head"><span class="section-title">' + dayKey + ' Programı</span><span class="section-count' + (pStats.done === pStats.total ? ' done' : '') + '">' + pStats.done + ' / ' + pStats.total + '</span></div>';
+
+    html += '<div class="ex-list">';
+    prog.ex.forEach(function (ex) {
+      var sets = (session.sets && session.sets[ex.name]) || [];
+      var doneCount = sets.filter(Boolean).length;
+      var exDone = doneCount === ex.sets;
+      var isFocus = prog.focus === ex.name;
+      var w = (session.weights && session.weights[ex.name] != null) ? session.weights[ex.name] : null;
+
+      html += '<div class="ex-row' + (exDone ? ' done' : '') + (isFocus ? ' focus' : '') + '" data-ex="' + escapeHtml(ex.name) + '">';
+      html += '<div class="ex-top"><div class="ex-name">' + escapeHtml(ex.name);
+      if (isFocus) html += '<span class="focus-pill">★ Odak</span>';
+      html += '</div><div class="ex-reps">' + ex.sets + ' × ' + escapeHtml(ex.reps) + '</div></div>';
+      html += '<div class="sets-row"><div class="sets">';
+      for (var k = 0; k < ex.sets; k++) {
+        html += '<button class="set' + (sets[k] ? ' done' : '') + '" data-set="' + k + '">' + (k + 1) + '</button>';
+      }
+      html += '</div><button class="weight-btn' + (w != null ? ' has-weight' : '') + '" data-weight-btn="1">' + (w != null ? formatWeight(w) + ' kg' : '+ kg') + '</button></div></div>';
+    });
+    html += '</div>';
+
+    if (prog.notes) {
+      prog.notes.forEach(function (n) {
+        html += '<div class="notes-section"><h3>' + escapeHtml(n.title) + '</h3><div class="notes-list"><ul>';
+        n.items.forEach(function (x) { html += '<li>' + escapeHtml(x) + '</li>'; });
+        html += '</ul></div></div>';
+      });
+    }
+
+    if (state.generalNotes && state.generalNotes.length) {
+      html += '<div class="notes-section"><h3>Genel Notlar</h3><div class="notes-list"><ul>';
+      state.generalNotes.forEach(function (x) { html += '<li>' + escapeHtml(x) + '</li>'; });
+      html += '</ul></div></div>';
+    }
+
+    $("#workoutContent").innerHTML = html;
+
+    // Eventler
+    var sBtn = $("#startSessionBtn");
+    if (sBtn) sBtn.addEventListener("click", function () {
+      pushUndo();
+      ensureSession(dateISO).startedAt = Date.now();
+      saveToCloud();
+      renderWorkout();
+    });
+    var eBtn = $("#endSessionBtn");
+    if (eBtn) eBtn.addEventListener("click", function () {
+      var s = ensureSession(dateISO);
+      if (s.startedAt) { s.endedAt = Date.now(); s.duration = Math.round((s.endedAt - s.startedAt) / 1000); }
+      saveToCloud();
+      renderWorkout();
+      showToast("Antrenman kaydedildi · " + formatDuration(s.duration));
+    });
+    var calInput = $("#calorieInput");
+    if (calInput) calInput.addEventListener("input", function () {
+      var v = parseInt(calInput.value, 10);
+      ensureSession(dateISO).calories = isNaN(v) ? null : v;
+      saveToCloud();
+    });
+
+    $("#workoutContent").querySelectorAll(".ex-row").forEach(function (exEl) {
+      var exName = exEl.dataset.ex;
+      var exDef = prog.ex.find(function (e) { return e.name === exName; });
+      var lpTimer = null, lpFired = false;
+
+      exEl.querySelectorAll(".set").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (lpFired) { lpFired = false; return; }
+          toggleSet(dateISO, exName, Number(btn.dataset.set), exDef.sets);
+          renderWorkout();
+          renderHeader();
+          checkCelebration(dateISO, dayKey);
+        });
+      });
+
+      exEl.querySelector("[data-weight-btn]").addEventListener("click", function (e) {
+        e.stopPropagation();
+        openWeightPicker(dateISO, exName);
+      });
+
+      function startPress(e) {
+        if (e.target.classList && (e.target.classList.contains("set") || e.target.classList.contains("weight-btn"))) return;
+        lpFired = false;
+        lpTimer = setTimeout(function () {
+          lpFired = true;
+          var allDone = exEl.classList.contains("done");
+          markAllSets(dateISO, exName, exDef.sets, !allDone);
+          renderWorkout();
+          renderHeader();
+          showToast(allDone ? "Setler temizlendi" : "Tüm setler işaretlendi");
+        }, 550);
+      }
+      function cancelPress() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } }
+      exEl.addEventListener("touchstart", startPress, { passive: true });
+      exEl.addEventListener("touchend", cancelPress);
+      exEl.addEventListener("touchmove", cancelPress);
+      exEl.addEventListener("mousedown", startPress);
+      exEl.addEventListener("mouseup", cancelPress);
+    });
+
+    if (timerInterval) clearInterval(timerInterval);
+    if (isRunning) {
+      timerInterval = setInterval(function () {
+        var el = $("#liveTimer");
+        if (el) el.textContent = formatDuration(Math.floor((Date.now() - session.startedAt) / 1000));
+      }, 1000);
+    }
+  }
+
+  // 2. PROGRAMIM (DİNAMİK EDİTÖR) RENDER
+  function renderProgramEditor() {
+    var html = '<div class="day-pills">';
+    WEEK_DAYS.forEach(function (d) {
+      html += '<button class="day-pill' + (d === editorDay ? ' active' : '') + '" data-ed-day="' + d + '">' + d + '</button>';
+    });
+    html += '</div>';
+
+    var dayObj = state.program[editorDay] || { rest: false, ex: [] };
+
+    html += '<div class="settings-group" style="margin-bottom:1rem;">';
+    html += '<div class="settings-row"><div class="label-wrap"><span>' + editorDay + ' Dinlenme Günü</span><span class="sub">Aktifse bu gün antrenman yapılmaz</span></div>';
+    html += '<input type="checkbox" id="toggleRestDay" style="width:22px; height:22px; accent-color:var(--accent);" ' + (dayObj.rest ? 'checked' : '') + '></div>';
+    html += '</div>';
+
+    if (!dayObj.rest) {
+      html += '<div class="section-head"><span class="section-title">' + editorDay + ' Hareketleri (' + (dayObj.ex ? dayObj.ex.length : 0) + ')</span></div>';
+      if (!dayObj.ex || dayObj.ex.length === 0) {
+        html += '<div class="rest-card" style="padding:2rem 1rem;"><p>Bu güne henüz hareket eklenmemiş.</p></div>';
+      } else {
+        dayObj.ex.forEach(function (ex, idx) {
+          var isFocus = dayObj.focus === ex.name;
+          html += '<div class="prog-ex-card">';
+          html += '<div class="prog-ex-info"><div class="prog-ex-title">' + escapeHtml(ex.name);
+          if (isFocus) html += '<span class="focus-pill">★ Odak</span>';
+          html += '<span class="group-tag">' + escapeHtml(getMuscleGroup(ex)) + '</span></div>';
+          html += '<div class="prog-ex-meta">' + ex.sets + ' Set × ' + escapeHtml(ex.reps) + ' Tekrar</div></div>';
+          html += '<div class="prog-ex-actions">';
+          html += '<button class="mini-btn" onclick="openExEditor(' + idx + ')" title="Düzenle"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>';
+          html += '<button class="mini-btn danger" onclick="deleteProgEx(' + idx + ')" title="Sil"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+          html += '</div></div>';
+        });
+      }
+      html += '<button class="btn-primary" onclick="openExEditor(-1)">+ ' + editorDay + ' Gününe Hareket Ekle</button>';
+    }
+
+    $("#programContent").innerHTML = html;
+
+    $("#programContent").querySelectorAll("[data-ed-day]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        editorDay = btn.dataset.edDay;
+        renderProgramEditor();
+      });
+    });
+
+    $("#toggleRestDay").addEventListener("change", function (e) {
+      if (!state.program[editorDay]) state.program[editorDay] = { rest: false, ex: [] };
+      state.program[editorDay].rest = e.target.checked;
+      saveToCloud();
+      renderProgramEditor();
+      showToast(e.target.checked ? editorDay + " dinlenme günü yapıldı" : editorDay + " antrenman günü yapıldı");
+    });
+  }
+
+  window.openExEditor = function (idx) {
+    var dayObj = state.program[editorDay] || { rest: false, ex: [] };
+    $("#editExIdx").value = idx;
+    $("#exModalDaySub").textContent = editorDay;
+    if (idx >= 0 && dayObj.ex[idx]) {
+      var ex = dayObj.ex[idx];
+      $("#exModalTitle").textContent = "Hareketi Düzenle";
+      $("#exNameInput").value = ex.name;
+      $("#exSetsInput").value = ex.sets;
+      $("#exRepsInput").value = ex.reps;
+      $("#exGroupInput").value = getMuscleGroup(ex);
+      var isF = dayObj.focus === ex.name;
+      $("#exFocusInput").checked = isF;
+      $("#exFocusNoteWrap").style.display = isF ? "block" : "none";
+      $("#exFocusNoteInput").value = isF ? (dayObj.focusNote || "") : "";
+    } else {
+      $("#exModalTitle").textContent = "Yeni Hareket Ekle";
+      $("#exNameInput").value = "";
+      $("#exSetsInput").value = 3;
+      $("#exRepsInput").value = "8-12";
+      $("#exGroupInput").value = "İtme";
+      $("#exFocusInput").checked = false;
+      $("#exFocusNoteWrap").style.display = "none";
+      $("#exFocusNoteInput").value = "";
+    }
+    $("#exEditorModal").classList.add("show");
+  };
+
+  $("#exFocusInput").addEventListener("change", function (e) {
+    $("#exFocusNoteWrap").style.display = e.target.checked ? "block" : "none";
+  });
+  $("#exModalCancel").addEventListener("click", function () { $("#exEditorModal").classList.remove("show"); });
+  $("#exModalSave").addEventListener("click", function () {
+    var name = $("#exNameInput").value.trim();
+    var sets = parseInt($("#exSetsInput").value, 10) || 3;
+    var reps = $("#exRepsInput").value.trim() || "10";
+    var group = $("#exGroupInput").value;
+    var isFocus = $("#exFocusInput").checked;
+    var focusNote = $("#exFocusNoteInput").value.trim();
+    if (!name) { showToast("Hareket adı yazmalısın"); return; }
+
+    if (!state.program[editorDay]) state.program[editorDay] = { rest: false, ex: [] };
+    if (!state.program[editorDay].ex) state.program[editorDay].ex = [];
+
+    var idx = parseInt($("#editExIdx").value, 10);
+    var exObj = { name: name, sets: sets, reps: reps, group: group };
+    if (idx >= 0) state.program[editorDay].ex[idx] = exObj;
+    else state.program[editorDay].ex.push(exObj);
+
+    if (isFocus) {
+      state.program[editorDay].focus = name;
+      state.program[editorDay].focusNote = focusNote || "Bugünün ana hareketi. Formu koruyarak son 1-2 tekrar zorla.";
+    } else if (state.program[editorDay].focus === name) {
+      delete state.program[editorDay].focus;
+      delete state.program[editorDay].focusNote;
+    }
+
+    saveToCloud();
+    $("#exEditorModal").classList.remove("show");
+    renderProgramEditor();
+    showToast("Program güncellendi");
+  });
+
+  window.deleteProgEx = function (idx) {
+    if (!confirm("Bu hareketi programdan silmek istiyor musun?")) return;
+    var removed = state.program[editorDay].ex.splice(idx, 1)[0];
+    if (removed && state.program[editorDay].focus === removed.name) {
+      delete state.program[editorDay].focus;
+    }
+    saveToCloud();
+    renderProgramEditor();
+    showToast("Hareket silindi");
+  };
+
+  // AĞIRLIK SEÇİCİ
+  var wpDate = null, wpEx = null;
+  function openWeightPicker(dateISO, exName) {
+    wpDate = dateISO; wpEx = exName;
+    $("#weightExerciseName").textContent = exName;
+    var cur = (getSession(dateISO).weights && getSession(dateISO).weights[exName]) || null;
+    var html = '<button class="weight-option empty-option' + (cur == null ? ' selected' : '') + '" data-val="null">Ağırlık yok</button>';
+    for (var i = 1; i <= 200; i++) {
+      var kg = i * 2.5;
+      var sel = (cur != null && Math.abs(cur - kg) < 0.001) ? ' selected' : '';
+      html += '<button class="weight-option' + sel + '" data-val="' + kg + '">' + formatWeight(kg) + ' kg</button>';
+    }
+    $("#weightList").innerHTML = html;
+    $("#weightList").querySelectorAll(".weight-option").forEach(function (b) {
+      b.addEventListener("click", function () {
+        setExerciseWeight(wpDate, wpEx, b.dataset.val === "null" ? null : parseFloat(b.dataset.val));
+        $("#weightModal").classList.remove("show");
+        renderWorkout();
+      });
+    });
+    $("#weightModal").classList.add("show");
+    setTimeout(function () {
+      var sel = document.querySelector(".weight-option.selected");
+      if (sel) sel.scrollIntoView({ block: "center" });
+    }, 30);
+  }
+  $("#weightCloseBtn").addEventListener("click", function () { $("#weightModal").classList.remove("show"); });
+
+  // DİNLENME KRONOMETRESİ
+  var restTimerInt = null, restSec = 90;
+  window.openRestModal = function () { $("#restTimerModal").classList.add("show"); };
+  window.closeRestModal = function () { $("#restTimerModal").classList.remove("show"); };
+  function updateRestClock() {
+    var m = String(Math.floor(restSec / 60)).padStart(2, "0"), s = String(restSec % 60).padStart(2, "0");
+    var txt = m + ":" + s;
+    $("#restClockDisplay").textContent = txt;
+    var pill = $("#restPillLabel");
+    if (pill) pill.textContent = restTimerInt ? txt : "Sayaç";
+  }
+  window.startRestCountdown = function (sec) {
+    clearInterval(restTimerInt);
+    restSec = sec;
+    updateRestClock();
+    restTimerInt = setInterval(function () {
+      restSec--;
+      updateRestClock();
+      if (restSec <= 0) {
+        clearInterval(restTimerInt);
+        restTimerInt = null;
+        updateRestClock();
+        showToast("⏰ Dinlenme süresi doldu!");
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
+    }, 1000);
+  };
+  window.stopRestCountdown = function () {
+    clearInterval(restTimerInt);
+    restTimerInt = null;
+    restSec = 90;
+    updateRestClock();
+  };
+
+  // 3. TAKVİM RENDER
+  function renderCalendar() {
+    var y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
+    $("#calMonthLabel").textContent = MONTHS_TR[m] + " " + y;
+    var html = "";
+    WEEK_HEADERS.forEach(function (h) { html += '<div class="cal-header">' + h + '</div>'; });
+    var first = new Date(y, m, 1), startWeekday = (first.getDay() + 6) % 7, daysInMonth = new Date(y, m + 1, 0).getDate();
+    for (var i = 0; i < startWeekday; i++) html += '<div class="cal-cell empty"></div>';
+    var t = today();
+    for (var d = 1; d <= daysInMonth; d++) {
+      var date = new Date(y, m, d), iso = toISO(date), dk = getDayKeyForDate(date), dp = state.program[dk];
+      var cls = "cal-cell" + (toISO(t) === iso ? " today" : "") + (date.getTime() > t.getTime() ? " future" : "");
+      var dot = "";
+      if (dp && !dp.rest && dp.ex && dp.ex.length) {
+        var p = getDayProgress(iso, dk);
+        if (p.done === p.total && p.total > 0) cls += " complete";
+        else if (p.done > 0) cls += " partial";
+        dot = '<span class="cal-dot"></span>';
+      }
+      html += '<button class="' + cls + '" data-date="' + iso + '">' + d + dot + '</button>';
+    }
+    $("#calGrid").innerHTML = html;
+    $("#calGrid").querySelectorAll(".cal-cell[data-date]").forEach(function (cell) {
+      cell.addEventListener("click", function () {
+        selectedDate = fromISO(cell.dataset.date);
+        document.querySelector('.segmented button[data-view="workout"]').click();
+      });
+    });
+  }
+
+  // 4. İSTATİSTİK & PAYLAŞIM KARTI
+  function parseAvgReps(repsStr) {
+    if (!repsStr) return null;
+    var s = String(repsStr).trim();
+    var m = s.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
+    if (m) return (parseFloat(m[1]) + parseFloat(m[2])) / 2;
+    m = s.match(/^(\d+)\s*\+\s*(\d+)$/);
+    if (m) return parseInt(m[1], 10) + parseInt(m[2], 10);
+    m = s.match(/^(\d+(?:\.\d+)?)$/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  function collectRangeStats(startISO, endISO) {
+    var sessions = 0, setsCount = 0, duration = 0, calories = 0, volume = 0;
+    var groups = {};
+    GROUP_ORDER.forEach(function (g) { groups[g] = 0; });
+    for (var iso in state.sessions) {
+      if (iso < startISO || iso > endISO) continue;
+      var s = state.sessions[iso];
+      if (!s || !s.sets) continue;
+      var dk = getDayKeyForDate(fromISO(iso)), prog = state.program[dk];
+      if (!prog || prog.rest || !prog.ex) continue;
+      var hasAny = false;
+      prog.ex.forEach(function (ex) {
+        var arr = s.sets[ex.name] || [];
+        var doneCount = arr.filter(Boolean).length;
+        if (doneCount > 0) {
+          hasAny = true;
+          setsCount += doneCount;
+          var grp = getMuscleGroup(ex);
+          if (groups[grp] !== undefined) groups[grp] += doneCount;
+          var w = s.weights && s.weights[ex.name];
+          if (w != null) {
+            var reps = parseAvgReps(ex.reps);
+            if (reps) volume += w * doneCount * reps;
+          }
+        }
+      });
+      if (hasAny) sessions++;
+      duration += s.duration || 0;
+      calories += s.calories || 0;
+    }
+    return { sessions: sessions, sets: setsCount, duration: duration, calories: calories, volume: volume, groups: groups };
+  }
+
+  function renderDonut(groups) {
+    var total = 0;
+    GROUP_ORDER.forEach(function (g) { total += (groups[g] || 0); });
+    if (total === 0) return '<div class="stats-empty">Bu ay henüz veri yok</div>';
+    var r = 70, sw = 26, circ = 2 * Math.PI * r, offset = 0;
+    var svg = '<svg viewBox="0 0 200 200" class="donut"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="' + sw + '"/>';
+    GROUP_ORDER.forEach(function (g) {
+      var count = groups[g] || 0;
+      if (!count) return;
+      var dash = (count / total) * circ;
+      svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="' + GROUP_COLORS[g] + '" stroke-width="' + sw + '" stroke-dasharray="' + dash + ' ' + (circ - dash) + '" stroke-dashoffset="' + (-offset) + '" transform="rotate(-90 100 100)"/>';
+      offset += dash;
+    });
+    svg += '</svg><div class="donut-legend">';
+    GROUP_ORDER.forEach(function (g) {
+      var count = groups[g] || 0, pct = Math.round((count / total) * 100);
+      svg += '<div class="donut-legend-item"><span class="donut-legend-label"><span class="donut-legend-dot" style="background:' + GROUP_COLORS[g] + '"></span>' + g + '</span><span class="donut-legend-value">' + count + ' · ' + pct + '%</span></div>';
+    });
+    return '<div class="donut-wrap">' + svg + '</div></div>';
+  }
+
+  function renderStats() {
+    var now = today();
+    var wSt = collectRangeStats(toISO(normalizeToMonday(now)), toISO(now));
+    var mSt = collectRangeStats(toISO(new Date(now.getFullYear(), now.getMonth(), 1)), toISO(now));
+    var aSt = collectRangeStats("0000-00-00", toISO(now));
+
+    var tile = function (v, l) { return '<div class="stat-tile"><span class="stat-value">' + v + '</span><span class="stat-label">' + l + '</span></div>'; };
+    var html = '<button class="card-cta" id="openCardBtn"><div class="card-cta-icon"><svg viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16"/><path d="M14 14l1.586-1.586a2 2 0 0 1 2.828 0L20 14"/><circle cx="9" cy="9" r="2"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div><div class="card-cta-text"><div class="card-cta-title">Antrenman Kartı Oluştur</div><div class="card-cta-sub">Tarih aralığı seç, Story olarak paylaş</div></div><svg class="card-cta-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '<div class="stats-card"><h3>Bu Hafta</h3><div class="stats-grid">' + tile(wSt.sessions, "Antrenman") + tile(wSt.sets, "Set") + tile(formatDurationLong(wSt.duration), "Süre") + tile(wSt.calories + " kcal", "Kalori") + '</div></div>';
+    html += '<div class="stats-card"><h3>Bu Ay</h3><div class="stats-grid">' + tile(mSt.sessions, "Antrenman") + tile(mSt.sets, "Set") + tile(formatDurationLong(mSt.duration), "Süre") + tile(mSt.calories + " kcal", "Kalori") + '</div></div>';
+    html += '<div class="stats-card"><h3>Kas Grubu · Bu Ay</h3>' + renderDonut(mSt.groups) + '</div>';
+    html += '<div class="stats-card"><h3>Tüm Zamanlar</h3><div class="stats-grid">' + tile(aSt.sessions, "Antrenman") + tile(aSt.sets, "Set") + tile(formatDurationLong(aSt.duration), "Süre") + tile(formatVolume(aSt.volume), "Toplam Hacim") + '</div></div>';
+    $("#statsContent").innerHTML = html;
+    $("#openCardBtn").addEventListener("click", openCardModal);
+  }
+
+  // STORY KARTI CANVAS ÇİZİMİ
+  var currentCardBlob = null, currentCardDataURL = null;
+  function openCardModal() {
+    var now = today();
+    $("#cardStart").value = toISO(new Date(now.getTime() - 6 * 86400000));
+    $("#cardEnd").value = toISO(now);
+    $("#cardPreviewWrap").style.display = "none";
+    $("#cardActions").style.display = "none";
+    $("#cardModal").classList.add("show");
+  }
+  $("#cardClose").addEventListener("click", function () { $("#cardModal").classList.remove("show"); });
+  $("#cardGenerate").addEventListener("click", function () {
+    var s = $("#cardStart").value, e = $("#cardEnd").value;
+    if (!s || !e || s > e) { showToast("Geçerli tarih aralığı seç"); return; }
+    var canvas = document.createElement("canvas");
+    drawCard(canvas, s, e);
+    currentCardDataURL = canvas.toDataURL("image/png");
+    $("#cardPreview").src = currentCardDataURL;
+    $("#cardPreviewWrap").style.display = "block";
+    $("#cardActions").style.display = "flex";
+    canvas.toBlob(function (b) { currentCardBlob = b; }, "image/png");
+  });
+  $("#cardShare").addEventListener("click", function () {
+    if (!currentCardBlob) return;
+    var file = new File([currentCardBlob], "antrenman.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: "Antrenman Özeti" }).catch(function () {});
+    } else showToast("Paylaşım desteklenmiyor, İndir butonunu kullan");
+  });
+  $("#cardDownload").addEventListener("click", function () {
+    if (!currentCardDataURL) return;
+    var a = document.createElement("a");
+    a.href = currentCardDataURL;
+    a.download = "antrenman-ozeti.png";
+    a.click();
+  });
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  function drawCard(canvas, startISO, endISO) {
+    var W = 1080, H = 1920;
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d");
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    var bgTop = isDark ? "#0F0F14" : "#FFFFFF", bgBottom = isDark ? "#000000" : "#F2F2F7";
+    var text = isDark ? "#FFFFFF" : "#000000", text3 = "#8E8E93";
+    var sep = isDark ? "rgba(255,255,255,0.10)" : "rgba(60,60,67,0.12)";
+    var accent = isDark ? "#0A84FF" : "#007AFF", success = isDark ? "#30D158" : "#34C759";
+
+    var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, bgTop); bgGrad.addColorStop(1, bgBottom);
+    ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+
+    var pad = 90, stats = collectRangeStats(startISO, endISO);
+    ctx.fillStyle = accent; ctx.fillRect(pad, 90, 100, 8);
+    ctx.fillStyle = text3; ctx.font = "700 24px -apple-system, sans-serif";
+    ctx.fillText("ANTRENMAN ÖZETİ", pad, 170);
+
+    var s = fromISO(startISO), e = fromISO(endISO);
+    ctx.fillStyle = text; ctx.font = "800 72px -apple-system, sans-serif";
+    ctx.fillText(s.getDate() + " " + MONTHS_TR[s.getMonth()] + " — " + e.getDate() + " " + MONTHS_TR[e.getMonth()], pad, 280);
+
+    ctx.fillStyle = sep; ctx.fillRect(pad, 340, W - pad * 2, 2);
+
+    var tiles = [
+      { label: "ANTRENMAN", value: String(stats.sessions) },
+      { label: "SET", value: String(stats.sets) },
+      { label: "SÜRE", value: formatDurationLong(stats.duration) }
+    ];
+    if (stats.calories > 0) tiles.push({ label: "KALORİ", value: stats.calories + " kcal" });
+
+    var colW = (W - pad * 2) / tiles.length;
+    tiles.forEach(function (t, i) {
+      var cx = pad + colW * i + colW / 2;
+      ctx.textAlign = "center";
+      ctx.fillStyle = text3; ctx.font = "700 20px -apple-system, sans-serif"; ctx.fillText(t.label, cx, 430);
+      ctx.fillStyle = text; ctx.font = "800 54px -apple-system, sans-serif"; ctx.fillText(t.value, cx, 505);
+    });
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = sep; ctx.fillRect(pad, 570, W - pad * 2, 2);
+    ctx.fillStyle = text3; ctx.font = "700 24px -apple-system, sans-serif"; ctx.fillText("KAS GRUBU DAĞILIMI", pad, 640);
+
+    var gTotal = 0, maxG = 0;
+    GROUP_ORDER.forEach(function (g) { var v = stats.groups[g] || 0; gTotal += v; if (v > maxG) maxG = v; });
+    GROUP_ORDER.forEach(function (g, i) {
+      var c = stats.groups[g] || 0, pct = gTotal > 0 ? Math.round((c / gTotal) * 100) : 0;
+      var y = 700 + i * 70;
+      ctx.fillStyle = GROUP_COLORS[g]; ctx.beginPath(); ctx.arc(pad + 10, y + 8, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = text; ctx.font = "600 28px -apple-system, sans-serif"; ctx.fillText(g, pad + 35, y + 18);
+      var bx = pad + 240, bw = W - pad * 2 - 440;
+      ctx.fillStyle = sep; roundedRect(ctx, bx, y, bw, 14, 7); ctx.fill();
+      if (c > 0 && maxG > 0) {
+        ctx.fillStyle = GROUP_COLORS[g]; roundedRect(ctx, bx, y, Math.max((c / maxG) * bw, 14), 14, 7); ctx.fill();
+      }
+      ctx.textAlign = "right"; ctx.fillStyle = text; ctx.font = "700 24px -apple-system, sans-serif";
+      ctx.fillText(c + " · " + pct + "%", W - pad, y + 18); ctx.textAlign = "left";
+    });
+
+    var streak = calculateStreak();
+    if (streak > 0) {
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#FF9500"; ctx.font = "800 36px -apple-system, sans-serif";
+      ctx.fillText("🔥 " + streak + " GÜN STREAK", W / 2, 1480);
+    }
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = text; ctx.font = "800 52px -apple-system, sans-serif";
+    ctx.fillText(state.name || "Antrenman", W / 2, H - 150);
+    ctx.fillStyle = text3; ctx.font = "500 22px -apple-system, sans-serif";
+    ctx.fillText("antrenman günlüğü", W / 2, H - 105);
+  }
+
+  // 5. AYARLAR RENDER
+  function renderSettings() {
+    var html = '<div class="settings-group-title">Profil & Hesap</div><div class="settings-group">';
+    html += '<div class="settings-row"><div class="label-wrap"><span>İsim Soyisim</span></div><input type="text" id="settingsName" value="' + escapeHtml(state.name || "") + '"></div>';
+    html += '<div class="settings-row"><div class="label-wrap"><span>Program Başlangıç Pazartesi</span></div><input type="date" id="settingsDate" value="' + (state.startDate || toISO(normalizeToMonday(today()))) + '"></div>';
+    html += '<button class="settings-row primary" id="saveProfileBtn"><span>Değişiklikleri Kaydet</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '</div>';
+
+    html += '<div class="settings-group-title">Program Şablonları & Yedek</div><div class="settings-group">';
+    html += '<button class="settings-row primary" id="loadDefaultProgBtn"><div class="label-wrap"><span>Varsayılan Programı Yükle</span><span class="sub">5 günlük Full Body / Kondisyon şablonunu yükler</span></div><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '<button class="settings-row primary" id="backupBtn"><div class="label-wrap"><span>JSON Yedek İndir</span><span class="sub">Tüm verilerini cihazına kaydet</span></div><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>';
+    html += '</div>';
+
+    html += '<div class="settings-group-title">Oturum</div><div class="settings-group">';
+    html += '<div class="info-row"><span>Hesap</span><span class="value">' + escapeHtml(currentUser ? currentUser.email : "") + '</span></div>';
+    html += '<button class="settings-row danger" id="logoutBtn"><span>Çıkış Yap</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '</div>';
+
+    $("#settingsContent").innerHTML = html;
+
+    $("#saveProfileBtn").addEventListener("click", function () {
+      var n = $("#settingsName").value.trim(), d = $("#settingsDate").value;
+      if (!n || !d) { showToast("İsim ve tarih gerekli"); return; }
+      state.name = n;
+      state.startDate = toISO(normalizeToMonday(fromISO(d)));
+      saveToCloud();
+      renderHeader();
+      showToast("Profil kaydedildi");
+    });
+
+    $("#loadDefaultProgBtn").addEventListener("click", function () {
+      if (!confirm("Mevcut haftalık program şablonun varsayılan programla değiştirilecek. Onaylıyor musun?")) return;
+      state.program = JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+      saveToCloud();
+      showToast("Varsayılan program yüklendi");
+    });
+
+    $("#backupBtn").addEventListener("click", function () {
+      var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "antrenman-yedek-" + toISO(today()) + ".json";
+      a.click();
+      showToast("Yedek indirildi");
+    });
+
+    $("#logoutBtn").addEventListener("click", async function () {
+      await sb.auth.signOut();
+      currentUser = null;
+      $("#authScreen").classList.add("show");
+    });
+  }
+
+  function checkCelebration(dateISO, dayKey) {
+    var p = getDayProgress(dateISO, dayKey);
+    if (p.total > 0 && p.done === p.total) {
+      if (state.sessions[dateISO] && state.sessions[dateISO].__celebrated) return;
+      ensureSession(dateISO).__celebrated = true;
+      saveToCloud();
+      var colors = ["#007AFF", "#34C759", "#FFCC00"];
+      for (var i = 0; i < 30; i++) {
+        var piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "%";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 0.3) + "s";
+        $("#celebration").appendChild(piece);
+        setTimeout(function (el) { if (el.parentNode) el.parentNode.removeChild(el); }, 2500, piece);
+      }
+      showToast("🎉 " + dayKey + " tamamlandı!");
+    }
+  }
+
+  function renderAll() {
+    renderHeader();
+    if (currentView === "workout") renderWorkout();
+    if (currentView === "program") renderProgramEditor();
+    if (currentView === "calendar") renderCalendar();
+    if (currentView === "stats") renderStats();
+    if (currentView === "settings") renderSettings();
+  }
+
+  // BAŞLANGIÇ OTURUM DİNLEYİCİSİ
+  sb.auth.onAuthStateChange(function (_event, session) {
+    if (session && session.user) {
+      currentUser = session.user;
+      $("#authScreen").classList.remove("show");
+      loadFromCloud();
+    } else {
+      currentUser = null;
+      $("#authScreen").classList.add("show");
+    }
+  });
+})();
+</script>
+</body>
+</html>
