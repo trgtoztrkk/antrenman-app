@@ -26,6 +26,8 @@
     --success-soft: rgba(52, 199, 89, 0.12);
     --warning: #FF9500;
     --danger: #FF3B30;
+    --purple: #AF52DE;
+    --purple-soft: rgba(175, 82, 222, 0.14);
     --focus: #FFCC00;
     --focus-soft: rgba(255, 204, 0, 0.15);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -51,6 +53,8 @@
     --success-soft: rgba(48, 209, 88, 0.18);
     --warning: #FF9F0A;
     --danger: #FF453A;
+    --purple: #BF5AF2;
+    --purple-soft: rgba(191, 90, 242, 0.2);
     --focus: #FFD60A;
     --focus-soft: rgba(255, 214, 10, 0.18);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -73,7 +77,7 @@
   button, input, select, textarea { font-family: inherit; }
   button { cursor: pointer; -webkit-appearance: none; appearance: none; }
 
-  /* AUTH & ONBOARDING SCREEN */
+  /* AUTH SCREEN */
   .onboard {
     position: fixed; inset: 0;
     background: var(--bg);
@@ -160,7 +164,7 @@
     color: #fff;
     font-size: 0.96rem;
     font-weight: 600;
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
   }
   .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
   .btn-primary:disabled { opacity: 0.5; }
@@ -375,16 +379,17 @@
 
   .section-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     padding: 0 0.25rem 0.5rem;
+    gap: 0.5rem;
   }
   .section-title {
     font-size: 0.75rem;
     color: var(--text-3);
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
   }
   .section-count { font-size: 0.8rem; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; }
   .section-count.done { color: var(--success); font-weight: 600; }
@@ -427,12 +432,16 @@
     background: var(--focus);
   }
   .ex-row.focus.done::before { background: var(--success); }
+  .ex-row.superset-item {
+    border-left: 3px solid var(--purple);
+    background: color-mix(in srgb, var(--purple-soft) 35%, var(--surface));
+  }
 
   .ex-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     margin-bottom: 0.65rem;
   }
   .ex-name {
@@ -442,8 +451,10 @@
     line-height: 1.3;
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
   }
   .ex-row.done .ex-name { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-3); }
   .focus-pill {
@@ -458,6 +469,27 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
   }
+  .superset-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.45rem;
+    border-radius: 6px;
+    background: var(--purple-soft);
+    color: var(--purple);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .swap-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.42rem;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.62rem;
+    font-weight: 600;
+  }
   .group-tag {
     font-size: 0.65rem;
     font-weight: 600;
@@ -466,7 +498,24 @@
     background: var(--surface-2);
     color: var(--text-3);
   }
-  .ex-reps { font-size: 0.82rem; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; flex: 0 0 auto; }
+  .ex-right-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 0 0 auto;
+  }
+  .ex-reps { font-size: 0.82rem; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .swap-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--separator);
+    background: var(--bg);
+    color: var(--text-3);
+    font-size: 0.72rem;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .swap-btn:active { background: var(--accent-soft); color: var(--accent); }
 
   .sets-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
   .sets { display: flex; gap: 0.42rem; flex-wrap: wrap; }
@@ -515,10 +564,10 @@
   .rest-card h3 { margin: 0 0 0.35rem; font-size: 1rem; font-weight: 600; }
   .rest-card p { margin: 0; font-size: 0.85rem; color: var(--text-3); line-height: 1.5; }
 
-  .notes-section { margin-top: 1.35rem; }
+  .notes-section { margin-top: 1.25rem; }
   .notes-section > h3 {
-    font-size: 0.75rem; color: var(--text-3); font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.5rem 0.25rem;
+    font-size: 0.75rem; color: var(--text-3); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem 0.25rem;
   }
   .notes-list {
     background: var(--surface);
@@ -539,7 +588,7 @@
     border: 1px solid var(--separator);
     border-radius: var(--radius-lg);
     padding: 1rem;
-    margin-bottom: 1.15rem;
+    margin-bottom: 0.9rem;
   }
   .prog-manager-top {
     display: flex;
@@ -607,6 +656,41 @@
   .tool-btn.accent { color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); }
   .tool-btn.danger { color: var(--danger); }
 
+  /* HAFTALIK HACİM ÖZET ŞERİDİ */
+  .vol-summary-card {
+    background: var(--surface);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .vol-summary-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--text-3);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .vol-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .vol-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 8px;
+    background: var(--bg);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+  .vol-dot { width: 7px; height: 7px; border-radius: 50%; }
+
   .day-pills {
     display: flex;
     gap: 0.35rem;
@@ -631,32 +715,130 @@
     color: #fff;
     border-color: var(--accent);
   }
+
+  .copy-day-pill-btn {
+    padding: 0.32rem 0.65rem;
+    border-radius: 8px;
+    border: 1px solid var(--accent-soft);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.74rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .copy-day-pill-btn:active { opacity: 0.8; }
+
+  /* SÜRÜKLE BIRAK HAREKET KARTLARI */
+  .sortable-list {
+    position: relative;
+  }
   .prog-ex-card {
     background: var(--surface);
     border: 1px solid var(--separator);
     border-radius: var(--radius-md);
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 0.75rem 0.75rem 0.45rem;
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.55rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
   }
+  .prog-ex-card.superset-card {
+    border-left: 3px solid var(--purple);
+  }
+  .prog-ex-card.dragging {
+    opacity: 0.92;
+    transform: scale(1.02);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    z-index: 100;
+    border-color: var(--accent);
+  }
+  .drag-handle {
+    width: 32px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    cursor: grab;
+    touch-action: none;
+    flex: 0 0 auto;
+    font-size: 1.15rem;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .drag-handle:active { cursor: grabbing; color: var(--accent); }
   .prog-ex-info { flex: 1; min-width: 0; }
-  .prog-ex-title { font-size: 0.94rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-  .prog-ex-meta { font-size: 0.78rem; color: var(--text-3); margin-top: 0.2rem; }
-  .prog-ex-actions { display: flex; gap: 0.3rem; flex: 0 0 auto; }
+  .prog-ex-title { font-size: 0.92rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+  .prog-ex-meta { font-size: 0.76rem; color: var(--text-3); margin-top: 0.2rem; }
+  .prog-ex-actions { display: flex; gap: 0.25rem; flex: 0 0 auto; align-items: center; }
   .mini-btn {
-    width: 32px; height: 32px;
+    width: 28px; height: 28px;
     border-radius: 8px;
     border: 1px solid var(--separator);
     background: var(--bg);
     color: var(--text-2);
     display: flex; align-items: center; justify-content: center;
     padding: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
+  .mini-btn:disabled { opacity: 0.3; pointer-events: none; }
   .mini-btn.danger { color: var(--danger); }
-  .mini-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .mini-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* NOT DÜZENLEME KARTLARI */
+  .note-edit-box {
+    background: var(--surface);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    margin-top: 1rem;
+  }
+  .note-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+  .note-edit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 0.5px solid var(--separator);
+    font-size: 0.82rem;
+    color: var(--text-2);
+  }
+  .note-edit-item:last-child { border-bottom: none; }
+  .inline-add-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+  .inline-add-row input {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--separator);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.82rem;
+  }
+  .inline-add-row input:focus { outline: none; border-color: var(--accent); }
+  .inline-add-row button {
+    padding: 0 0.85rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
 
   /* STATS & CALENDAR & SETTINGS */
   .stats-card {
@@ -821,7 +1003,7 @@
       <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 9v6M21 9v6"/></svg>
     </div>
     <h1>Antrenman</h1>
-    <p>Programlarını kaydet, isimlendir, dilediğini devreye al ve gelişimini takip et.</p>
+    <p>Programlarını tasarla, isimlendir, dilediğini devreye al ve gelişimini takip et.</p>
     <div class="auth-tabs">
       <button class="active" id="tabLogin">Giriş Yap</button>
       <button id="tabRegister">Kayıt Ol</button>
@@ -886,7 +1068,7 @@
   <div id="workoutContent"></div>
 </div>
 
-<!-- 2. PROGRAMIM (ÇOKLU PROGRAM KÜTÜPHANESİ + EDİTÖR) GÖRÜNÜMÜ -->
+<!-- 2. PROGRAMIM GÖRÜNÜMÜ -->
 <div class="view" id="view-program">
   <div id="programContent"></div>
 </div>
@@ -938,6 +1120,67 @@
   </div>
 </div>
 
+<!-- GÜN KOPYALAMA MODALI -->
+<div class="sheet-modal" id="copyDayModal">
+  <div class="sheet-box" style="max-width:420px; border-radius:24px; margin:auto;">
+    <div class="sheet-head">
+      <div>
+        <h3 id="copyDayModalTitle">Günü Kopyala</h3>
+        <p id="copyDayModalSub">Seçili günün tüm hareketleri ve notları aktarılır</p>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Hedef Program</label>
+        <select id="copyTargetProgSelect"></select>
+      </div>
+      <div class="field">
+        <label>Hedef Gün (Üzerine Yazılır)</label>
+        <select id="copyTargetDaySelect"></select>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeCopyDayModal()">İptal</button>
+      <button class="btn-save" id="copyDayConfirmBtn">Kopyala</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANTRENMAN SIRASINDA ANLIK HAREKET DEĞİŞTİRME (SWAP) MODALI -->
+<div class="sheet-modal" id="swapExModal">
+  <div class="sheet-box" style="max-width:420px; border-radius:24px; margin:auto;">
+    <div class="sheet-head">
+      <div>
+        <h3>Güne Özel Hareket Değiştir</h3>
+        <p id="swapExSub">Ana programın bozulmaz, sadece bugüne işlenir</p>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <input type="hidden" id="swapOrigName">
+      <input type="hidden" id="swapDateISO">
+      <div class="field">
+        <label>Alternatif Hareket Adı</label>
+        <input type="text" id="swapNewName" placeholder="Örn: Dumbbell Bench Press">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
+        <div class="field">
+          <label>Set Sayısı</label>
+          <input type="number" id="swapNewSets" min="1" max="15" value="3">
+        </div>
+        <div class="field">
+          <label>Tekrar / Süre</label>
+          <input type="text" id="swapNewReps" value="8-12">
+        </div>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" id="swapResetBtn" style="color:var(--danger);">Orijinale Dön</button>
+      <button class="btn-cancel" onclick="closeSwapModal()">İptal</button>
+      <button class="btn-save" id="swapConfirmBtn">Uygula</button>
+    </div>
+  </div>
+</div>
+
 <!-- AĞIRLIK SEÇİCİ SHEET -->
 <div class="sheet-modal" id="weightModal">
   <div class="sheet-box" style="max-height:72vh;">
@@ -980,7 +1223,7 @@
         </div>
       </div>
       <div class="field">
-        <label>Kas Grubu (İstatistik Grafiği İçin)</label>
+        <label>Kas Grubu (Hacim ve İstatistik Grafiği İçin)</label>
         <select id="exGroupInput">
           <option value="İtme">İtme (Göğüs, Omuz, Triceps)</option>
           <option value="Çekme">Çekme (Sırt, Biceps, Arka Omuz)</option>
@@ -988,6 +1231,10 @@
           <option value="Core">Core (Karın, Bel)</option>
           <option value="Kondisyon">Kondisyon / Kardiyo</option>
         </select>
+      </div>
+      <div class="field" style="display:flex; align-items:center; gap:0.6rem; padding-top:0.35rem;">
+        <input type="checkbox" id="exSupersetInput" style="width:20px; height:20px; accent-color:var(--purple);">
+        <label for="exSupersetInput" style="margin:0; font-size:0.88rem; color:var(--text);">⚡ Süper Set / Devre Parçası (Dinlenmeden Geç)</label>
       </div>
       <div class="field" style="display:flex; align-items:center; gap:0.6rem; padding-top:0.35rem;">
         <input type="checkbox" id="exFocusInput" style="width:20px; height:20px; accent-color:var(--accent);">
@@ -1091,18 +1338,19 @@
         { name: "OHP", sets: 3, reps: "8", group: "İtme" },
         { name: "Lat Pulldown", sets: 3, reps: "10", group: "Çekme" },
         { name: "Hanging Knee Raise", sets: 3, reps: "10", group: "Core" }
-      ]
+      ],
+      notes: []
     },
     "Salı": {
       rest: false,
       ex: [
-        { name: "Barfiks + Şınav", sets: 5, reps: "2+4", group: "Çekme" },
-        { name: "Plate Halo", sets: 3, reps: "10", group: "Core" },
-        { name: "Plate Speed Punch", sets: 3, reps: "10", group: "Kondisyon" },
-        { name: "Plate Burpee", sets: 3, reps: "4", group: "Kondisyon" },
-        { name: "Plate Swing", sets: 3, reps: "12", group: "Bacak" },
-        { name: "Plate Wood Chop", sets: 3, reps: "10", group: "Core" },
-        { name: "Plate Russian Twist", sets: 3, reps: "10", group: "Core" },
+        { name: "Barfiks + Şınav", sets: 5, reps: "2+4", group: "Çekme", superset: true },
+        { name: "Plate Halo", sets: 3, reps: "10", group: "Core", superset: true },
+        { name: "Plate Speed Punch", sets: 3, reps: "10", group: "Kondisyon", superset: true },
+        { name: "Plate Burpee", sets: 3, reps: "4", group: "Kondisyon", superset: true },
+        { name: "Plate Swing", sets: 3, reps: "12", group: "Bacak", superset: true },
+        { name: "Plate Wood Chop", sets: 3, reps: "10", group: "Core", superset: true },
+        { name: "Plate Russian Twist", sets: 3, reps: "10", group: "Core", superset: true },
         { name: "Kum Torbası", sets: 3, reps: "2 dk", group: "Kondisyon" }
       ],
       notes: [{
@@ -1121,18 +1369,19 @@
         { name: "Lat Raise", sets: 3, reps: "10", group: "İtme" },
         { name: "Face Pull", sets: 3, reps: "15", group: "Çekme" },
         { name: "Cable Crunch", sets: 3, reps: "12", group: "Core" }
-      ]
+      ],
+      notes: []
     },
     "Perşembe": {
       rest: false,
       ex: [
-        { name: "Barfiks + Şınav", sets: 5, reps: "2+4", group: "Çekme" },
-        { name: "Plate Halo", sets: 3, reps: "10", group: "Core" },
-        { name: "Plate Speed Punch", sets: 3, reps: "10", group: "Kondisyon" },
-        { name: "Plate Burpee", sets: 3, reps: "4", group: "Kondisyon" },
-        { name: "Plate Swing", sets: 3, reps: "12", group: "Bacak" },
-        { name: "Plate Wood Chop", sets: 3, reps: "10", group: "Core" },
-        { name: "Plate Russian Twist", sets: 3, reps: "10", group: "Core" },
+        { name: "Barfiks + Şınav", sets: 5, reps: "2+4", group: "Çekme", superset: true },
+        { name: "Plate Halo", sets: 3, reps: "10", group: "Core", superset: true },
+        { name: "Plate Speed Punch", sets: 3, reps: "10", group: "Kondisyon", superset: true },
+        { name: "Plate Burpee", sets: 3, reps: "4", group: "Kondisyon", superset: true },
+        { name: "Plate Swing", sets: 3, reps: "12", group: "Bacak", superset: true },
+        { name: "Plate Wood Chop", sets: 3, reps: "10", group: "Core", superset: true },
+        { name: "Plate Russian Twist", sets: 3, reps: "10", group: "Core", superset: true },
         { name: "Kum Torbası", sets: 3, reps: "2 dk", group: "Kondisyon" }
       ],
       notes: [{
@@ -1152,16 +1401,17 @@
         { name: "Plate Front Raise", sets: 3, reps: "10", group: "İtme" },
         { name: "RDL", sets: 3, reps: "8-10", group: "Bacak" },
         { name: "Plank", sets: 3, reps: "30-45 sn", group: "Core" }
-      ]
+      ],
+      notes: []
     },
-    "Cumartesi": { rest: true, ex: [] },
-    "Pazar": { rest: true, ex: [] }
+    "Cumartesi": { rest: true, ex: [], notes: [] },
+    "Pazar": { rest: true, ex: [], notes: [] }
   };
 
   function createEmptyDays() {
     var obj = {};
     WEEK_DAYS.forEach(function (d, i) {
-      obj[d] = { rest: i >= 5, ex: [] };
+      obj[d] = { rest: i >= 5, ex: [], notes: [] };
     });
     return obj;
   }
@@ -1317,7 +1567,6 @@
       state.generalNotes = Array.isArray(data.general_notes) ? data.general_notes : DEFAULT_NOTES.slice();
       state.sessions = data.sessions || {};
 
-      // Çoklu program formatı veya eski tekli program formatı kontrolü (veri kaybını önler)
       if (data.program && Array.isArray(data.program.list) && data.program.list.length > 0) {
         state.library = data.program;
       } else if (data.program && data.program["Pazartesi"]) {
@@ -1395,6 +1644,32 @@
     return "Kondisyon";
   }
 
+  // O GÜN İÇİN ANLIK DEĞİŞTİRİLMİŞ (SWAP) HAREKETİ ÇÖZÜMLE
+  function resolveExerciseForDate(dateISO, exDef) {
+    var s = getSession(dateISO);
+    if (s.swaps && s.swaps[exDef.name]) {
+      var sw = s.swaps[exDef.name];
+      return {
+        origName: exDef.name,
+        activeName: sw.name,
+        sets: sw.sets || exDef.sets,
+        reps: sw.reps || exDef.reps,
+        group: exDef.group,
+        superset: exDef.superset,
+        isSwapped: true
+      };
+    }
+    return {
+      origName: exDef.name,
+      activeName: exDef.name,
+      sets: exDef.sets,
+      reps: exDef.reps,
+      group: exDef.group,
+      superset: exDef.superset,
+      isSwapped: false
+    };
+  }
+
   function getSession(dateISO) { return state.sessions[dateISO] || {}; }
   function ensureSession(dateISO) {
     if (!state.sessions[dateISO]) state.sessions[dateISO] = { sets: {}, weights: {} };
@@ -1434,10 +1709,11 @@
     var prog = days[dayKey];
     if (!prog || prog.rest || !prog.ex) return { total: 0, done: 0 };
     var total = 0, done = 0;
-    prog.ex.forEach(function (ex) {
-      total += ex.sets;
-      var arr = (getSession(dateISO).sets && getSession(dateISO).sets[ex.name]) || [];
-      for (var i = 0; i < ex.sets; i++) if (arr[i]) done++;
+    prog.ex.forEach(function (exDef) {
+      var resolved = resolveExerciseForDate(dateISO, exDef);
+      total += resolved.sets;
+      var arr = (getSession(dateISO).sets && getSession(dateISO).sets[resolved.activeName]) || [];
+      for (var i = 0; i < resolved.sets; i++) if (arr[i]) done++;
     });
     return { total: total, done: done };
   }
@@ -1552,17 +1828,22 @@
     html += '<div class="section-head"><span class="section-title">' + dayKey + ' · ' + escapeHtml(getActiveProgramObj().name) + '</span><span class="section-count' + (pStats.done === pStats.total ? ' done' : '') + '">' + pStats.done + ' / ' + pStats.total + '</span></div>';
 
     html += '<div class="ex-list">';
-    prog.ex.forEach(function (ex) {
-      var sets = (session.sets && session.sets[ex.name]) || [];
+    prog.ex.forEach(function (exDef) {
+      var ex = resolveExerciseForDate(dateISO, exDef);
+      var sets = (session.sets && session.sets[ex.activeName]) || [];
       var doneCount = sets.filter(Boolean).length;
       var exDone = doneCount === ex.sets;
-      var isFocus = prog.focus === ex.name;
-      var w = (session.weights && session.weights[ex.name] != null) ? session.weights[ex.name] : null;
+      var isFocus = prog.focus === exDef.name;
+      var w = (session.weights && session.weights[ex.activeName] != null) ? session.weights[ex.activeName] : null;
 
-      html += '<div class="ex-row' + (exDone ? ' done' : '') + (isFocus ? ' focus' : '') + '" data-ex="' + escapeHtml(ex.name) + '">';
-      html += '<div class="ex-top"><div class="ex-name">' + escapeHtml(ex.name);
+      html += '<div class="ex-row' + (exDone ? ' done' : '') + (isFocus ? ' focus' : '') + (ex.superset ? ' superset-item' : '') + '" data-orig-ex="' + escapeHtml(ex.origName) + '" data-active-ex="' + escapeHtml(ex.activeName) + '">';
+      html += '<div class="ex-top"><div class="ex-name">' + escapeHtml(ex.activeName);
       if (isFocus) html += '<span class="focus-pill">★ Odak</span>';
-      html += '</div><div class="ex-reps">' + ex.sets + ' × ' + escapeHtml(ex.reps) + '</div></div>';
+      if (ex.superset) html += '<span class="superset-pill">⚡ Devre</span>';
+      if (ex.isSwapped) html += '<span class="swap-pill">Alternatif</span>';
+      html += '</div><div class="ex-right-meta"><div class="ex-reps">' + ex.sets + ' × ' + escapeHtml(ex.reps) + '</div>';
+      html += '<button class="swap-btn" data-swap-btn="1" title="Bugünlük Alternatif Hareket Seç">⇄</button></div></div>';
+
       html += '<div class="sets-row"><div class="sets">';
       for (var k = 0; k < ex.sets; k++) {
         html += '<button class="set' + (sets[k] ? ' done' : '') + '" data-set="' + k + '">' + (k + 1) + '</button>';
@@ -1571,11 +1852,15 @@
     });
     html += '</div>';
 
-    if (prog.notes) {
+    if (prog.notes && prog.notes.length) {
       prog.notes.forEach(function (n) {
-        html += '<div class="notes-section"><h3>' + escapeHtml(n.title) + '</h3><div class="notes-list"><ul>';
-        n.items.forEach(function (x) { html += '<li>' + escapeHtml(x) + '</li>'; });
-        html += '</ul></div></div>';
+        if (typeof n === "string") {
+          html += '<div class="notes-section"><h3>Gün Notu</h3><div class="notes-list"><ul><li>' + escapeHtml(n) + '</li></ul></div></div>';
+        } else if (n && n.items) {
+          html += '<div class="notes-section"><h3>' + escapeHtml(n.title || "Gün Notu") + '</h3><div class="notes-list"><ul>';
+          n.items.forEach(function (x) { html += '<li>' + escapeHtml(x) + '</li>'; });
+          html += '</ul></div></div>';
+        }
       });
     }
 
@@ -1610,15 +1895,17 @@
     });
 
     $("#workoutContent").querySelectorAll(".ex-row").forEach(function (exEl) {
-      var exName = exEl.dataset.ex;
-      var exDef = prog.ex.find(function (e) { return e.name === exName; });
+      var origName = exEl.dataset.origEx;
+      var activeName = exEl.dataset.activeEx;
+      var exDef = prog.ex.find(function (e) { return e.name === origName; });
+      var resolved = resolveExerciseForDate(dateISO, exDef);
       var lpTimer = null, lpFired = false;
 
       exEl.querySelectorAll(".set").forEach(function (btn) {
         btn.addEventListener("click", function (e) {
           e.stopPropagation();
           if (lpFired) { lpFired = false; return; }
-          toggleSet(dateISO, exName, Number(btn.dataset.set), exDef.sets);
+          toggleSet(dateISO, activeName, Number(btn.dataset.set), resolved.sets);
           renderWorkout();
           renderHeader();
           checkCelebration(dateISO, dayKey);
@@ -1627,16 +1914,21 @@
 
       exEl.querySelector("[data-weight-btn]").addEventListener("click", function (e) {
         e.stopPropagation();
-        openWeightPicker(dateISO, exName);
+        openWeightPicker(dateISO, activeName);
+      });
+
+      exEl.querySelector("[data-swap-btn]").addEventListener("click", function (e) {
+        e.stopPropagation();
+        openSwapModal(dateISO, exDef);
       });
 
       function startPress(e) {
-        if (e.target.classList && (e.target.classList.contains("set") || e.target.classList.contains("weight-btn"))) return;
+        if (e.target.classList && (e.target.classList.contains("set") || e.target.classList.contains("weight-btn") || e.target.classList.contains("swap-btn"))) return;
         lpFired = false;
         lpTimer = setTimeout(function () {
           lpFired = true;
           var allDone = exEl.classList.contains("done");
-          markAllSets(dateISO, exName, exDef.sets, !allDone);
+          markAllSets(dateISO, activeName, resolved.sets, !allDone);
           renderWorkout();
           renderHeader();
           showToast(allDone ? "Setler temizlendi" : "Tüm setler işaretlendi");
@@ -1659,10 +1951,69 @@
     }
   }
 
-  // 2. PROGRAMIM (ÇOKLU PROGRAM KÜTÜPHANESİ + EDİTÖR)
+  // ANLIK HAREKET DEĞİŞTİRME (SWAP) İŞLEMLERİ
+  window.openSwapModal = function (dateISO, exDef) {
+    var resolved = resolveExerciseForDate(dateISO, exDef);
+    $("#swapOrigName").value = exDef.name;
+    $("#swapDateISO").value = dateISO;
+    $("#swapExSub").textContent = "Orijinal: " + exDef.name + " (" + exDef.sets + "×" + exDef.reps + ")";
+    $("#swapNewName").value = resolved.isSwapped ? resolved.activeName : "";
+    $("#swapNewSets").value = resolved.sets;
+    $("#swapNewReps").value = resolved.reps;
+    $("#swapResetBtn").style.display = resolved.isSwapped ? "block" : "none";
+    $("#swapExModal").classList.add("show");
+    setTimeout(function () { $("#swapNewName").focus(); }, 60);
+  };
+  window.closeSwapModal = function () { $("#swapExModal").classList.remove("show"); };
+  $("#swapConfirmBtn").addEventListener("click", function () {
+    var dateISO = $("#swapDateISO").value;
+    var origName = $("#swapOrigName").value;
+    var newName = $("#swapNewName").value.trim();
+    var newSets = parseInt($("#swapNewSets").value, 10) || 3;
+    var newReps = $("#swapNewReps").value.trim() || "10";
+    if (!newName) { showToast("Alternatif hareket adını yaz"); return; }
+    var s = ensureSession(dateISO);
+    if (!s.swaps) s.swaps = {};
+    s.swaps[origName] = { name: newName, sets: newSets, reps: newReps };
+    saveToCloud();
+    closeSwapModal();
+    renderWorkout();
+    showToast("Bugünlük " + newName + " olarak ayarlandı");
+  });
+  $("#swapResetBtn").addEventListener("click", function () {
+    var dateISO = $("#swapDateISO").value;
+    var origName = $("#swapOrigName").value;
+    var s = ensureSession(dateISO);
+    if (s.swaps) delete s.swaps[origName];
+    saveToCloud();
+    closeSwapModal();
+    renderWorkout();
+    showToast("Orijinal harekete dönüldü");
+  });
+
+  // HAFTALIK SET HACMİ HESAPLAYICI (PROGRAMIM SEKMESİ İÇİN)
+  function calculateWeeklyPlanSets(days) {
+    var counts = {};
+    GROUP_ORDER.forEach(function (g) { counts[g] = 0; });
+    var total = 0;
+    WEEK_DAYS.forEach(function (d) {
+      var dayObj = days[d];
+      if (!dayObj || dayObj.rest || !dayObj.ex) return;
+      dayObj.ex.forEach(function (ex) {
+        var g = getMuscleGroup(ex);
+        var s = parseInt(ex.sets, 10) || 0;
+        if (counts[g] !== undefined) counts[g] += s;
+        total += s;
+      });
+    });
+    return { total: total, counts: counts };
+  }
+
+  // 2. PROGRAMIM (ÇOKLU PROGRAM KÜTÜPHANESİ + GÜN KOPYALAMA + SÜRÜKLE BIRAK + NOTLAR)
   function renderProgramEditor() {
     var activeProg = getActiveProgramObj();
     var days = activeProg.days;
+    var vol = calculateWeeklyPlanSets(days);
 
     // Üst Kütüphane Yönetimi Kartı
     var html = '<div class="prog-manager-card">';
@@ -1680,6 +2031,15 @@
     html += '<button class="tool-btn danger" onclick="deleteActiveProgram()"><span>🗑 Programı</span><span>Sil</span></button>';
     html += '</div></div>';
 
+    // Canlı Haftalık Set Hacmi Özeti
+    html += '<div class="vol-summary-card">';
+    html += '<div class="vol-summary-head"><span>HAFTALIK PLANLANAN SET HACMİ</span><span>Toplam ' + vol.total + ' Set</span></div>';
+    html += '<div class="vol-chips">';
+    GROUP_ORDER.forEach(function (g) {
+      html += '<span class="vol-chip"><span class="vol-dot" style="background:' + GROUP_COLORS[g] + '"></span>' + g + ': ' + vol.counts[g] + '</span>';
+    });
+    html += '</div></div>';
+
     // Gün Seçim Hapları
     html += '<div class="day-pills">';
     WEEK_DAYS.forEach(function (d) {
@@ -1687,7 +2047,7 @@
     });
     html += '</div>';
 
-    var dayObj = days[editorDay] || { rest: false, ex: [] };
+    var dayObj = days[editorDay] || { rest: false, ex: [], notes: [] };
 
     html += '<div class="settings-group" style="margin-bottom:1rem;">';
     html += '<div class="settings-row"><div class="label-wrap"><span>' + editorDay + ' Dinlenme Günü</span><span class="sub">Aktifse bu gün antrenman yapılmaz</span></div>';
@@ -1695,594 +2055,5 @@
     html += '</div>';
 
     if (!dayObj.rest) {
-      html += '<div class="section-head"><span class="section-title">' + editorDay + ' Hareketleri (' + (dayObj.ex ? dayObj.ex.length : 0) + ')</span></div>';
-      if (!dayObj.ex || dayObj.ex.length === 0) {
-        html += '<div class="rest-card" style="padding:2rem 1rem;"><p>Bu güne henüz hareket eklenmemiş.</p></div>';
-      } else {
-        dayObj.ex.forEach(function (ex, idx) {
-          var isFocus = dayObj.focus === ex.name;
-          html += '<div class="prog-ex-card">';
-          html += '<div class="prog-ex-info"><div class="prog-ex-title">' + escapeHtml(ex.name);
-          if (isFocus) html += '<span class="focus-pill">★ Odak</span>';
-          html += '<span class="group-tag">' + escapeHtml(getMuscleGroup(ex)) + '</span></div>';
-          html += '<div class="prog-ex-meta">' + ex.sets + ' Set × ' + escapeHtml(ex.reps) + ' Tekrar</div></div>';
-          html += '<div class="prog-ex-actions">';
-          html += '<button class="mini-btn" onclick="openExEditor(' + idx + ')" title="Düzenle"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>';
-          html += '<button class="mini-btn danger" onclick="deleteProgEx(' + idx + ')" title="Sil"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
-          html += '</div></div>';
-        });
-      }
-      html += '<button class="btn-primary" onclick="openExEditor(-1)">+ ' + editorDay + ' Gününe Hareket Ekle</button>';
-    }
-
-    $("#programContent").innerHTML = html;
-
-    // Program Seçici Değişikliği
-    $("#activeProgSelect").addEventListener("change", function (e) {
-      state.library.activeId = e.target.value;
-      saveToCloud();
-      renderHeader();
-      renderProgramEditor();
-      showToast("Aktif program: " + getActiveProgramObj().name);
-    });
-
-    $("#programContent").querySelectorAll("[data-ed-day]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        editorDay = btn.dataset.edDay;
-        renderProgramEditor();
-      });
-    });
-
-    $("#toggleRestDay").addEventListener("change", function (e) {
-      if (!days[editorDay]) days[editorDay] = { rest: false, ex: [] };
-      days[editorDay].rest = e.target.checked;
-      saveToCloud();
-      renderProgramEditor();
-      showToast(e.target.checked ? editorDay + " dinlenme günü yapıldı" : editorDay + " antrenman günü yapıldı");
-    });
-  }
-
-  // PROGRAM KÜTÜPHANE MODAL İŞLEMLERİ
-  var progNameAction = "create";
-  window.openProgNameModal = function (action) {
-    progNameAction = action;
-    var activeProg = getActiveProgramObj();
-    if (action === "create") {
-      $("#progNameModalTitle").textContent = "Yeni Boş Program Oluştur";
-      $("#progNameModalSub").textContent = "Sıfırdan oluşturacağın programın adını yaz";
-      $("#progNameInput").value = "";
-    } else if (action === "duplicate") {
-      $("#progNameModalTitle").textContent = "Programı Farklı Kaydet";
-      $("#progNameModalSub").textContent = "Mevcut programın kopyası oluşturulacak";
-      $("#progNameInput").value = activeProg.name + " (Kopya)";
-    } else if (action === "rename") {
-      $("#progNameModalTitle").textContent = "Program Adını Değiştir";
-      $("#progNameModalSub").textContent = "Aktif programın yeni adını yaz";
-      $("#progNameInput").value = activeProg.name;
-    }
-    $("#progNameModal").classList.add("show");
-    setTimeout(function () { $("#progNameInput").focus(); }, 60);
-  };
-
-  window.closeProgNameModal = function () {
-    $("#progNameModal").classList.remove("show");
-  };
-
-  $("#progNameConfirmBtn").addEventListener("click", function () {
-    var name = $("#progNameInput").value.trim();
-    if (!name) { showToast("Program adı boş olamaz"); return; }
-    var activeProg = getActiveProgramObj();
-
-    if (progNameAction === "create") {
-      var newId = "prog_" + Date.now();
-      state.library.list.push({ id: newId, name: name, days: createEmptyDays() });
-      state.library.activeId = newId;
-      showToast('"' + name + '" oluşturuldu ve devreye alındı');
-    } else if (progNameAction === "duplicate") {
-      var copyId = "prog_" + Date.now();
-      state.library.list.push({
-        id: copyId,
-        name: name,
-        days: JSON.parse(JSON.stringify(activeProg.days))
-      });
-      state.library.activeId = copyId;
-      showToast('"' + name + '" olarak kaydedildi');
-    } else if (progNameAction === "rename") {
-      activeProg.name = name;
-      showToast("Program adı güncellendi");
-    }
-
-    saveToCloud();
-    closeProgNameModal();
-    renderHeader();
-    renderProgramEditor();
-  });
-
-  window.deleteActiveProgram = function () {
-    if (state.library.list.length <= 1) {
-      showToast("En az 1 kayıtlı program kalmalıdır");
-      return;
-    }
-    var activeProg = getActiveProgramObj();
-    if (!confirm('"' + activeProg.name + '" programını silmek istediğine emin misin?')) return;
-    state.library.list = state.library.list.filter(function (p) { return p.id !== activeProg.id; });
-    state.library.activeId = state.library.list[0].id;
-    saveToCloud();
-    renderHeader();
-    renderProgramEditor();
-    showToast("Program silindi");
-  };
-
-  // HAREKET EDİTÖRÜ
-  window.openExEditor = function (idx) {
-    var days = getActiveDays();
-    var dayObj = days[editorDay] || { rest: false, ex: [] };
-    $("#editExIdx").value = idx;
-    $("#exModalDaySub").textContent = editorDay + " (" + getActiveProgramObj().name + ")";
-    if (idx >= 0 && dayObj.ex[idx]) {
-      var ex = dayObj.ex[idx];
-      $("#exModalTitle").textContent = "Hareketi Düzenle";
-      $("#exNameInput").value = ex.name;
-      $("#exSetsInput").value = ex.sets;
-      $("#exRepsInput").value = ex.reps;
-      $("#exGroupInput").value = getMuscleGroup(ex);
-      var isF = dayObj.focus === ex.name;
-      $("#exFocusInput").checked = isF;
-      $("#exFocusNoteWrap").style.display = isF ? "block" : "none";
-      $("#exFocusNoteInput").value = isF ? (dayObj.focusNote || "") : "";
-    } else {
-      $("#exModalTitle").textContent = "Yeni Hareket Ekle";
-      $("#exNameInput").value = "";
-      $("#exSetsInput").value = 3;
-      $("#exRepsInput").value = "8-12";
-      $("#exGroupInput").value = "İtme";
-      $("#exFocusInput").checked = false;
-      $("#exFocusNoteWrap").style.display = "none";
-      $("#exFocusNoteInput").value = "";
-    }
-    $("#exEditorModal").classList.add("show");
-  };
-
-  $("#exFocusInput").addEventListener("change", function (e) {
-    $("#exFocusNoteWrap").style.display = e.target.checked ? "block" : "none";
-  });
-  $("#exModalCancel").addEventListener("click", function () { $("#exEditorModal").classList.remove("show"); });
-  $("#exModalSave").addEventListener("click", function () {
-    var name = $("#exNameInput").value.trim();
-    var sets = parseInt($("#exSetsInput").value, 10) || 3;
-    var reps = $("#exRepsInput").value.trim() || "10";
-    var group = $("#exGroupInput").value;
-    var isFocus = $("#exFocusInput").checked;
-    var focusNote = $("#exFocusNoteInput").value.trim();
-    if (!name) { showToast("Hareket adı yazmalısın"); return; }
-
-    var days = getActiveDays();
-    if (!days[editorDay]) days[editorDay] = { rest: false, ex: [] };
-    if (!days[editorDay].ex) days[editorDay].ex = [];
-
-    var idx = parseInt($("#editExIdx").value, 10);
-    var exObj = { name: name, sets: sets, reps: reps, group: group };
-    if (idx >= 0) days[editorDay].ex[idx] = exObj;
-    else days[editorDay].ex.push(exObj);
-
-    if (isFocus) {
-      days[editorDay].focus = name;
-      days[editorDay].focusNote = focusNote || "Bugünün ana hareketi. Formu koruyarak son 1-2 tekrar zorla.";
-    } else if (days[editorDay].focus === name) {
-      delete days[editorDay].focus;
-      delete days[editorDay].focusNote;
-    }
-
-    saveToCloud();
-    $("#exEditorModal").classList.remove("show");
-    renderProgramEditor();
-    showToast("Hareket kaydedildi");
-  });
-
-  window.deleteProgEx = function (idx) {
-    if (!confirm("Bu hareketi programdan silmek istiyor musun?")) return;
-    var days = getActiveDays();
-    var removed = days[editorDay].ex.splice(idx, 1)[0];
-    if (removed && days[editorDay].focus === removed.name) {
-      delete days[editorDay].focus;
-    }
-    saveToCloud();
-    renderProgramEditor();
-    showToast("Hareket silindi");
-  };
-
-  // AĞIRLIK SEÇİCİ
-  var wpDate = null, wpEx = null;
-  function openWeightPicker(dateISO, exName) {
-    wpDate = dateISO; wpEx = exName;
-    $("#weightExerciseName").textContent = exName;
-    var cur = (getSession(dateISO).weights && getSession(dateISO).weights[exName]) || null;
-    var html = '<button class="weight-option empty-option' + (cur == null ? ' selected' : '') + '" data-val="null">Ağırlık yok</button>';
-    for (var i = 1; i <= 200; i++) {
-      var kg = i * 2.5;
-      var sel = (cur != null && Math.abs(cur - kg) < 0.001) ? ' selected' : '';
-      html += '<button class="weight-option' + sel + '" data-val="' + kg + '">' + formatWeight(kg) + ' kg</button>';
-    }
-    $("#weightList").innerHTML = html;
-    $("#weightList").querySelectorAll(".weight-option").forEach(function (b) {
-      b.addEventListener("click", function () {
-        setExerciseWeight(wpDate, wpEx, b.dataset.val === "null" ? null : parseFloat(b.dataset.val));
-        $("#weightModal").classList.remove("show");
-        renderWorkout();
-      });
-    });
-    $("#weightModal").classList.add("show");
-    setTimeout(function () {
-      var sel = document.querySelector(".weight-option.selected");
-      if (sel) sel.scrollIntoView({ block: "center" });
-    }, 30);
-  }
-  $("#weightCloseBtn").addEventListener("click", function () { $("#weightModal").classList.remove("show"); });
-
-  // DİNLENME KRONOMETRESİ
-  var restTimerInt = null, restSec = 90;
-  window.openRestModal = function () { $("#restTimerModal").classList.add("show"); };
-  window.closeRestModal = function () { $("#restTimerModal").classList.remove("show"); };
-  function updateRestClock() {
-    var m = String(Math.floor(restSec / 60)).padStart(2, "0"), s = String(restSec % 60).padStart(2, "0");
-    var txt = m + ":" + s;
-    $("#restClockDisplay").textContent = txt;
-    var pill = $("#restPillLabel");
-    if (pill) pill.textContent = restTimerInt ? txt : "Sayaç";
-  }
-  window.startRestCountdown = function (sec) {
-    clearInterval(restTimerInt);
-    restSec = sec;
-    updateRestClock();
-    restTimerInt = setInterval(function () {
-      restSec--;
-      updateRestClock();
-      if (restSec <= 0) {
-        clearInterval(restTimerInt);
-        restTimerInt = null;
-        updateRestClock();
-        showToast("⏰ Dinlenme süresi doldu!");
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      }
-    }, 1000);
-  };
-  window.stopRestCountdown = function () {
-    clearInterval(restTimerInt);
-    restTimerInt = null;
-    restSec = 90;
-    updateRestClock();
-  };
-
-  // 3. TAKVİM
-  function renderCalendar() {
-    var days = getActiveDays();
-    var y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
-    $("#calMonthLabel").textContent = MONTHS_TR[m] + " " + y;
-    var html = "";
-    WEEK_HEADERS.forEach(function (h) { html += '<div class="cal-header">' + h + '</div>'; });
-    var first = new Date(y, m, 1), startWeekday = (first.getDay() + 6) % 7, daysInMonth = new Date(y, m + 1, 0).getDate();
-    for (var i = 0; i < startWeekday; i++) html += '<div class="cal-cell empty"></div>';
-    var t = today();
-    for (var d = 1; d <= daysInMonth; d++) {
-      var date = new Date(y, m, d), iso = toISO(date), dk = getDayKeyForDate(date), dp = days[dk];
-      var cls = "cal-cell" + (toISO(t) === iso ? " today" : "") + (date.getTime() > t.getTime() ? " future" : "");
-      var dot = "";
-      if (dp && !dp.rest && dp.ex && dp.ex.length) {
-        var p = getDayProgress(iso, dk);
-        if (p.done === p.total && p.total > 0) cls += " complete";
-        else if (p.done > 0) cls += " partial";
-        dot = '<span class="cal-dot"></span>';
-      }
-      html += '<button class="' + cls + '" data-date="' + iso + '">' + d + dot + '</button>';
-    }
-    $("#calGrid").innerHTML = html;
-    $("#calGrid").querySelectorAll(".cal-cell[data-date]").forEach(function (cell) {
-      cell.addEventListener("click", function () {
-        selectedDate = fromISO(cell.dataset.date);
-        document.querySelector('.segmented button[data-view="workout"]').click();
-      });
-    });
-  }
-
-  // 4. İSTATİSTİK & PAYLAŞIM KARTI
-  function parseAvgReps(repsStr) {
-    if (!repsStr) return null;
-    var s = String(repsStr).trim();
-    var m = s.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
-    if (m) return (parseFloat(m[1]) + parseFloat(m[2])) / 2;
-    m = s.match(/^(\d+)\s*\+\s*(\d+)$/);
-    if (m) return parseInt(m[1], 10) + parseInt(m[2], 10);
-    m = s.match(/^(\d+(?:\.\d+)?)$/);
-    return m ? parseFloat(m[1]) : null;
-  }
-
-  function collectRangeStats(startISO, endISO) {
-    var days = getActiveDays();
-    var sessions = 0, setsCount = 0, duration = 0, calories = 0, volume = 0;
-    var groups = {};
-    GROUP_ORDER.forEach(function (g) { groups[g] = 0; });
-    for (var iso in state.sessions) {
-      if (iso < startISO || iso > endISO) continue;
-      var s = state.sessions[iso];
-      if (!s || !s.sets) continue;
-      var dk = getDayKeyForDate(fromISO(iso)), prog = days[dk];
-      if (!prog || prog.rest || !prog.ex) continue;
-      var hasAny = false;
-      prog.ex.forEach(function (ex) {
-        var arr = s.sets[ex.name] || [];
-        var doneCount = arr.filter(Boolean).length;
-        if (doneCount > 0) {
-          hasAny = true;
-          setsCount += doneCount;
-          var grp = getMuscleGroup(ex);
-          if (groups[grp] !== undefined) groups[grp] += doneCount;
-          var w = s.weights && s.weights[ex.name];
-          if (w != null) {
-            var reps = parseAvgReps(ex.reps);
-            if (reps) volume += w * doneCount * reps;
-          }
-        }
-      });
-      if (hasAny) sessions++;
-      duration += s.duration || 0;
-      calories += s.calories || 0;
-    }
-    return { sessions: sessions, sets: setsCount, duration: duration, calories: calories, volume: volume, groups: groups };
-  }
-
-  function renderDonut(groups) {
-    var total = 0;
-    GROUP_ORDER.forEach(function (g) { total += (groups[g] || 0); });
-    if (total === 0) return '<div class="stats-empty">Bu ay henüz veri yok</div>';
-    var r = 70, sw = 26, circ = 2 * Math.PI * r, offset = 0;
-    var svg = '<svg viewBox="0 0 200 200" class="donut"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="' + sw + '"/>';
-    GROUP_ORDER.forEach(function (g) {
-      var count = groups[g] || 0;
-      if (!count) return;
-      var dash = (count / total) * circ;
-      svg += '<circle cx="100" cy="100" r="' + r + '" fill="none" stroke="' + GROUP_COLORS[g] + '" stroke-width="' + sw + '" stroke-dasharray="' + dash + ' ' + (circ - dash) + '" stroke-dashoffset="' + (-offset) + '" transform="rotate(-90 100 100)"/>';
-      offset += dash;
-    });
-    svg += '</svg><div class="donut-legend">';
-    GROUP_ORDER.forEach(function (g) {
-      var count = groups[g] || 0, pct = Math.round((count / total) * 100);
-      svg += '<div class="donut-legend-item"><span class="donut-legend-label"><span class="donut-legend-dot" style="background:' + GROUP_COLORS[g] + '"></span>' + g + '</span><span class="donut-legend-value">' + count + ' · ' + pct + '%</span></div>';
-    });
-    return '<div class="donut-wrap">' + svg + '</div></div>';
-  }
-
-  function renderStats() {
-    var now = today();
-    var wSt = collectRangeStats(toISO(normalizeToMonday(now)), toISO(now));
-    var mSt = collectRangeStats(toISO(new Date(now.getFullYear(), now.getMonth(), 1)), toISO(now));
-    var aSt = collectRangeStats("0000-00-00", toISO(now));
-
-    var tile = function (v, l) { return '<div class="stat-tile"><span class="stat-value">' + v + '</span><span class="stat-label">' + l + '</span></div>'; };
-    var html = '<button class="card-cta" id="openCardBtn"><div class="card-cta-icon"><svg viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16"/><path d="M14 14l1.586-1.586a2 2 0 0 1 2.828 0L20 14"/><circle cx="9" cy="9" r="2"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div><div class="card-cta-text"><div class="card-cta-title">Antrenman Kartı Oluştur</div><div class="card-cta-sub">Tarih aralığı seç, Story olarak paylaş</div></div><svg class="card-cta-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
-    html += '<div class="stats-card"><h3>Bu Hafta</h3><div class="stats-grid">' + tile(wSt.sessions, "Antrenman") + tile(wSt.sets, "Set") + tile(formatDurationLong(wSt.duration), "Süre") + tile(wSt.calories + " kcal", "Kalori") + '</div></div>';
-    html += '<div class="stats-card"><h3>Bu Ay</h3><div class="stats-grid">' + tile(mSt.sessions, "Antrenman") + tile(mSt.sets, "Set") + tile(formatDurationLong(mSt.duration), "Süre") + tile(mSt.calories + " kcal", "Kalori") + '</div></div>';
-    html += '<div class="stats-card"><h3>Kas Grubu · Bu Ay</h3>' + renderDonut(mSt.groups) + '</div>';
-    html += '<div class="stats-card"><h3>Tüm Zamanlar</h3><div class="stats-grid">' + tile(aSt.sessions, "Antrenman") + tile(aSt.sets, "Set") + tile(formatDurationLong(aSt.duration), "Süre") + tile(formatVolume(aSt.volume), "Toplam Hacim") + '</div></div>';
-    $("#statsContent").innerHTML = html;
-    $("#openCardBtn").addEventListener("click", openCardModal);
-  }
-
-  var currentCardBlob = null, currentCardDataURL = null;
-  function openCardModal() {
-    var now = today();
-    $("#cardStart").value = toISO(new Date(now.getTime() - 6 * 86400000));
-    $("#cardEnd").value = toISO(now);
-    $("#cardPreviewWrap").style.display = "none";
-    $("#cardActions").style.display = "none";
-    $("#cardModal").classList.add("show");
-  }
-  $("#cardClose").addEventListener("click", function () { $("#cardModal").classList.remove("show"); });
-  $("#cardGenerate").addEventListener("click", function () {
-    var s = $("#cardStart").value, e = $("#cardEnd").value;
-    if (!s || !e || s > e) { showToast("Geçerli tarih aralığı seç"); return; }
-    var canvas = document.createElement("canvas");
-    drawCard(canvas, s, e);
-    currentCardDataURL = canvas.toDataURL("image/png");
-    $("#cardPreview").src = currentCardDataURL;
-    $("#cardPreviewWrap").style.display = "block";
-    $("#cardActions").style.display = "flex";
-    canvas.toBlob(function (b) { currentCardBlob = b; }, "image/png");
-  });
-  $("#cardShare").addEventListener("click", function () {
-    if (!currentCardBlob) return;
-    var file = new File([currentCardBlob], "antrenman.png", { type: "image/png" });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file], title: "Antrenman Özeti" }).catch(function () {});
-    } else showToast("Paylaşım desteklenmiyor, İndir butonunu kullan");
-  });
-  $("#cardDownload").addEventListener("click", function () {
-    if (!currentCardDataURL) return;
-    var a = document.createElement("a");
-    a.href = currentCardDataURL;
-    a.download = "antrenman-ozeti.png";
-    a.click();
-  });
-
-  function roundedRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
-  }
-
-  function drawCard(canvas, startISO, endISO) {
-    var W = 1080, H = 1920;
-    canvas.width = W; canvas.height = H;
-    var ctx = canvas.getContext("2d");
-    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    var bgTop = isDark ? "#0F0F14" : "#FFFFFF", bgBottom = isDark ? "#000000" : "#F2F2F7";
-    var text = isDark ? "#FFFFFF" : "#000000", text3 = "#8E8E93";
-    var sep = isDark ? "rgba(255,255,255,0.10)" : "rgba(60,60,67,0.12)";
-    var accent = isDark ? "#0A84FF" : "#007AFF";
-
-    var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-    bgGrad.addColorStop(0, bgTop); bgGrad.addColorStop(1, bgBottom);
-    ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
-
-    var pad = 90, stats = collectRangeStats(startISO, endISO);
-    ctx.fillStyle = accent; ctx.fillRect(pad, 90, 100, 8);
-    ctx.fillStyle = text3; ctx.font = "700 24px -apple-system, sans-serif";
-    ctx.fillText("ANTRENMAN ÖZETİ", pad, 170);
-
-    var s = fromISO(startISO), e = fromISO(endISO);
-    ctx.fillStyle = text; ctx.font = "800 72px -apple-system, sans-serif";
-    ctx.fillText(s.getDate() + " " + MONTHS_TR[s.getMonth()] + " — " + e.getDate() + " " + MONTHS_TR[e.getMonth()], pad, 280);
-
-    ctx.fillStyle = sep; ctx.fillRect(pad, 340, W - pad * 2, 2);
-
-    var tiles = [
-      { label: "ANTRENMAN", value: String(stats.sessions) },
-      { label: "SET", value: String(stats.sets) },
-      { label: "SÜRE", value: formatDurationLong(stats.duration) }
-    ];
-    if (stats.calories > 0) tiles.push({ label: "KALORİ", value: stats.calories + " kcal" });
-
-    var colW = (W - pad * 2) / tiles.length;
-    tiles.forEach(function (t, i) {
-      var cx = pad + colW * i + colW / 2;
-      ctx.textAlign = "center";
-      ctx.fillStyle = text3; ctx.font = "700 20px -apple-system, sans-serif"; ctx.fillText(t.label, cx, 430);
-      ctx.fillStyle = text; ctx.font = "800 54px -apple-system, sans-serif"; ctx.fillText(t.value, cx, 505);
-    });
-
-    ctx.textAlign = "left";
-    ctx.fillStyle = sep; ctx.fillRect(pad, 570, W - pad * 2, 2);
-    ctx.fillStyle = text3; ctx.font = "700 24px -apple-system, sans-serif"; ctx.fillText("KAS GRUBU DAĞILIMI", pad, 640);
-
-    var gTotal = 0, maxG = 0;
-    GROUP_ORDER.forEach(function (g) { var v = stats.groups[g] || 0; gTotal += v; if (v > maxG) maxG = v; });
-    GROUP_ORDER.forEach(function (g, i) {
-      var c = stats.groups[g] || 0, pct = gTotal > 0 ? Math.round((c / gTotal) * 100) : 0;
-      var y = 700 + i * 70;
-      ctx.fillStyle = GROUP_COLORS[g]; ctx.beginPath(); ctx.arc(pad + 10, y + 8, 10, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = text; ctx.font = "600 28px -apple-system, sans-serif"; ctx.fillText(g, pad + 35, y + 18);
-      var bx = pad + 240, bw = W - pad * 2 - 440;
-      ctx.fillStyle = sep; roundedRect(ctx, bx, y, bw, 14, 7); ctx.fill();
-      if (c > 0 && maxG > 0) {
-        ctx.fillStyle = GROUP_COLORS[g]; roundedRect(ctx, bx, y, Math.max((c / maxG) * bw, 14), 14, 7); ctx.fill();
-      }
-      ctx.textAlign = "right"; ctx.fillStyle = text; ctx.font = "700 24px -apple-system, sans-serif";
-      ctx.fillText(c + " · " + pct + "%", W - pad, y + 18); ctx.textAlign = "left";
-    });
-
-    var streak = calculateStreak();
-    if (streak > 0) {
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#FF9500"; ctx.font = "800 36px -apple-system, sans-serif";
-      ctx.fillText("🔥 " + streak + " GÜN STREAK", W / 2, 1480);
-    }
-
-    ctx.textAlign = "center";
-    ctx.fillStyle = text; ctx.font = "800 52px -apple-system, sans-serif";
-    ctx.fillText(state.name || "Antrenman", W / 2, H - 150);
-    ctx.fillStyle = text3; ctx.font = "500 22px -apple-system, sans-serif";
-    ctx.fillText("antrenman günlüğü", W / 2, H - 105);
-  }
-
-  // 5. AYARLAR
-  function renderSettings() {
-    var html = '<div class="settings-group-title">Profil & Hesap</div><div class="settings-group">';
-    html += '<div class="settings-row"><div class="label-wrap"><span>İsim Soyisim</span></div><input type="text" id="settingsName" value="' + escapeHtml(state.name || "") + '"></div>';
-    html += '<div class="settings-row"><div class="label-wrap"><span>Program Başlangıç Pazartesi</span></div><input type="date" id="settingsDate" value="' + (state.startDate || toISO(normalizeToMonday(today()))) + '"></div>';
-    html += '<button class="settings-row primary" id="saveProfileBtn"><span>Değişiklikleri Kaydet</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
-    html += '</div>';
-
-    html += '<div class="settings-group-title">Hazır Şablon & Yedek</div><div class="settings-group">';
-    html += '<button class="settings-row primary" id="addDefaultProgBtn"><div class="label-wrap"><span>Varsayılan Şablonu Kütüphaneye Ekle</span><span class="sub">Mevcut programlarını silmeden yeni bir kayıt olarak ekler</span></div><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
-    html += '<button class="settings-row primary" id="backupBtn"><div class="label-wrap"><span>JSON Yedek İndir</span><span class="sub">Tüm programlarını ve geçmişini cihazına kaydet</span></div><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>';
-    html += '</div>';
-
-    html += '<div class="settings-group-title">Oturum</div><div class="settings-group">';
-    html += '<div class="info-row"><span>Hesap</span><span class="value">' + escapeHtml(currentUser ? currentUser.email : "") + '</span></div>';
-    html += '<button class="settings-row danger" id="logoutBtn"><span>Çıkış Yap</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
-    html += '</div>';
-
-    $("#settingsContent").innerHTML = html;
-
-    $("#saveProfileBtn").addEventListener("click", function () {
-      var n = $("#settingsName").value.trim(), d = $("#settingsDate").value;
-      if (!n || !d) { showToast("İsim ve tarih gerekli"); return; }
-      state.name = n;
-      state.startDate = toISO(normalizeToMonday(fromISO(d)));
-      saveToCloud();
-      renderHeader();
-      showToast("Profil kaydedildi");
-    });
-
-    $("#addDefaultProgBtn").addEventListener("click", function () {
-      var newId = "prog_" + Date.now();
-      state.library.list.push({
-        id: newId,
-        name: "5 Günlük Şablon (" + state.library.list.length + ")",
-        days: JSON.parse(JSON.stringify(DEFAULT_DAYS))
-      });
-      state.library.activeId = newId;
-      saveToCloud();
-      renderHeader();
-      showToast("Şablon kütüphaneye eklendi ve aktif edildi");
-    });
-
-    $("#backupBtn").addEventListener("click", function () {
-      var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "antrenman-yedek-" + toISO(today()) + ".json";
-      a.click();
-      showToast("Yedek indirildi");
-    });
-
-    $("#logoutBtn").addEventListener("click", async function () {
-      await sb.auth.signOut();
-      currentUser = null;
-      $("#authScreen").classList.add("show");
-    });
-  }
-
-  function checkCelebration(dateISO, dayKey) {
-    var p = getDayProgress(dateISO, dayKey);
-    if (p.total > 0 && p.done === p.total) {
-      if (state.sessions[dateISO] && state.sessions[dateISO].__celebrated) return;
-      ensureSession(dateISO).__celebrated = true;
-      saveToCloud();
-      var colors = ["#007AFF", "#34C759", "#FFCC00"];
-      for (var i = 0; i < 30; i++) {
-        var piece = document.createElement("div");
-        piece.className = "confetti";
-        piece.style.left = Math.random() * 100 + "%";
-        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.animationDelay = (Math.random() * 0.3) + "s";
-        $("#celebration").appendChild(piece);
-        setTimeout(function (el) { if (el.parentNode) el.parentNode.removeChild(el); }, 2500, piece);
-      }
-      showToast("🎉 " + dayKey + " tamamlandı!");
-    }
-  }
-
-  function renderAll() {
-    renderHeader();
-    if (currentView === "workout") renderWorkout();
-    if (currentView === "program") renderProgramEditor();
-    if (currentView === "calendar") renderCalendar();
-    if (currentView === "stats") renderStats();
-    if (currentView === "settings") renderSettings();
-  }
-
-  sb.auth.onAuthStateChange(function (_event, session) {
-    if (session && session.user) {
-      currentUser = session.user;
-      $("#authScreen").classList.remove("show");
-      loadFromCloud();
-    } else {
-      currentUser = null;
-      $("#authScreen").classList.add("show");
-    }
-  });
-})();
-</script>
-</body>
-</html>
+      html += '<div class="section-head">';
+      html += '<span class="section-title">' + editorDay + ' Hareketleri (' + (dayObj.ex ? dayObj.ex
