@@ -151,13 +151,6 @@
     font-size: 0.95rem;
   }
   .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
-  .field-hint {
-    font-size: 0.72rem;
-    color: var(--text-3);
-    margin-top: 0.35rem;
-    padding-left: 0.15rem;
-    line-height: 1.4;
-  }
   .btn-primary {
     width: 100%;
     padding: 0.9rem;
@@ -218,6 +211,9 @@
     color: var(--text-3);
     margin-top: 0.1rem;
     font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .header-actions { display: flex; gap: 0.25rem; align-items: center; flex: 0 0 auto; }
   .icon-btn {
@@ -537,7 +533,80 @@
   .notes-list li { margin-bottom: 0.25rem; }
   .notes-list li:last-child { margin-bottom: 0; }
 
-  /* PROGRAM EDITOR VIEW */
+  /* PROGRAM MANAGER & EDITOR VIEW */
+  .prog-manager-card {
+    background: var(--surface);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    margin-bottom: 1.15rem;
+  }
+  .prog-manager-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+  }
+  .prog-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.18rem 0.55rem;
+    border-radius: 100px;
+    background: var(--success-soft);
+    color: var(--success);
+  }
+  .prog-select-wrap {
+    position: relative;
+    margin-bottom: 0.75rem;
+  }
+  .prog-select {
+    width: 100%;
+    padding: 0.78rem 2.2rem 0.78rem 0.95rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--separator-strong);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.96rem;
+    font-weight: 700;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .prog-select:focus { outline: none; border-color: var(--accent); }
+  .prog-select-arrow {
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-3);
+    font-size: 0.75rem;
+  }
+  .prog-toolbar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+  }
+  .tool-btn {
+    padding: 0.55rem 0.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--separator);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.73rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    text-align: center;
+  }
+  .tool-btn:active { background: var(--surface-2); transform: scale(0.97); }
+  .tool-btn.accent { color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); }
+  .tool-btn.danger { color: var(--danger); }
+
   .day-pills {
     display: flex;
     gap: 0.35rem;
@@ -671,8 +740,6 @@
   .info-row { padding: 0.9rem 1rem; border-bottom: 0.5px solid var(--separator); display: flex; align-items: center; justify-content: space-between; font-size: 0.92rem; }
   .info-row:last-child { border-bottom: none; }
   .info-row .value { color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .info-row .value.strong { color: var(--text); font-weight: 600; }
-  .info-row .value.fire { color: var(--warning); font-weight: 600; }
 
   /* MODALS & SHEETS */
   .sheet-modal {
@@ -754,7 +821,7 @@
       <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 9v6M21 9v6"/></svg>
     </div>
     <h1>Antrenman</h1>
-    <p>Programını oluştur, ağırlıklarını takip et ve arkadaşlarınla gelişimini paylaş.</p>
+    <p>Programlarını kaydet, isimlendir, dilediğini devreye al ve gelişimini takip et.</p>
     <div class="auth-tabs">
       <button class="active" id="tabLogin">Giriş Yap</button>
       <button id="tabRegister">Kayıt Ol</button>
@@ -819,7 +886,7 @@
   <div id="workoutContent"></div>
 </div>
 
-<!-- 2. PROGRAMIM (DİNAMİK EDİTÖR) GÖRÜNÜMÜ -->
+<!-- 2. PROGRAMIM (ÇOKLU PROGRAM KÜTÜPHANESİ + EDİTÖR) GÖRÜNÜMÜ -->
 <div class="view" id="view-program">
   <div id="programContent"></div>
 </div>
@@ -847,6 +914,28 @@
 <!-- 5. AYARLAR GÖRÜNÜMÜ -->
 <div class="view" id="view-settings">
   <div id="settingsContent"></div>
+</div>
+
+<!-- PROGRAM İSİMLENDİRME / YENİ PROGRAM MODALI -->
+<div class="sheet-modal" id="progNameModal">
+  <div class="sheet-box" style="max-width:420px; border-radius:24px; margin:auto;">
+    <div class="sheet-head">
+      <div>
+        <h3 id="progNameModalTitle">Yeni Program</h3>
+        <p id="progNameModalSub">Programına ayırt edici bir isim ver</p>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Program Adı</label>
+        <input type="text" id="progNameInput" placeholder="Örn: Hipertrofi 5 Gün, Definasyon PPL, Ev Programı...">
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn-cancel" onclick="closeProgNameModal()">İptal</button>
+      <button class="btn-save" id="progNameConfirmBtn">Kaydet</button>
+    </div>
+  </div>
 </div>
 
 <!-- AĞIRLIK SEÇİCİ SHEET -->
@@ -975,7 +1064,6 @@
 (function () {
   "use strict";
 
-  // SUPABASE BAĞLANTISI
   var SUPABASE_URL = "https://aimqmhnutgzycnrajbrq.supabase.co";
   var SUPABASE_KEY = "sb_publishable_5tiaAs3wr9kxdIGBVatryw_X5mu9IRm";
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -991,8 +1079,7 @@
   };
   var GROUP_ORDER = ["İtme", "Çekme", "Bacak", "Core", "Kondisyon"];
 
-  // SENİN MEVCUT VARSAYILAN PROGRAMIN (Şablon olarak tek tıkla yüklenebilir)
-  var DEFAULT_PROGRAM = {
+  var DEFAULT_DAYS = {
     "Pazartesi": {
       rest: false,
       focus: "Bench Press",
@@ -1071,6 +1158,27 @@
     "Pazar": { rest: true, ex: [] }
   };
 
+  function createEmptyDays() {
+    var obj = {};
+    WEEK_DAYS.forEach(function (d, i) {
+      obj[d] = { rest: i >= 5, ex: [] };
+    });
+    return obj;
+  }
+
+  function createDefaultLibrary() {
+    return {
+      activeId: "prog_default",
+      list: [
+        {
+          id: "prog_default",
+          name: "Varsayılan 5 Günlük Program",
+          days: JSON.parse(JSON.stringify(DEFAULT_DAYS))
+        }
+      ]
+    };
+  }
+
   var DEFAULT_NOTES = [
     "Isınma: Bisiklet 5 dk + dinamik açma 2 dk",
     "Set arası: Büyük hareketler 2-3 dk, izole 60-90 sn",
@@ -1083,11 +1191,26 @@
   var state = {
     name: "",
     startDate: null,
-    program: JSON.parse(JSON.stringify(DEFAULT_PROGRAM)),
+    library: createDefaultLibrary(),
     generalNotes: DEFAULT_NOTES.slice(),
-    sessions: {},
-    lastBackup: null
+    sessions: {}
   };
+
+  function getActiveProgramObj() {
+    if (!state.library || !Array.isArray(state.library.list) || state.library.list.length === 0) {
+      state.library = createDefaultLibrary();
+    }
+    var found = state.library.list.find(function (p) { return p.id === state.library.activeId; });
+    if (!found) {
+      found = state.library.list[0];
+      state.library.activeId = found.id;
+    }
+    return found;
+  }
+
+  function getActiveDays() {
+    return getActiveProgramObj().days;
+  }
 
   var $ = function (s) { return document.querySelector(s); };
   var currentView = "workout";
@@ -1122,7 +1245,7 @@
     applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
   });
 
-  // YARDIMCI TARİH & FORMAT FONKSİYONLARI
+  // YARDIMCI FONKSİYONLAR
   function toISO(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
@@ -1163,7 +1286,7 @@
     toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
   }
 
-  // BULUT SENKRONİZASYONU (SUPABASE)
+  // BULUT SENKRONİZASYONU
   function saveToCloud() {
     if (!currentUser) return;
     var dot = $("#syncDot");
@@ -1174,7 +1297,7 @@
         user_id: currentUser.id,
         display_name: state.name,
         start_date: state.startDate,
-        program: state.program,
+        program: state.library,
         general_notes: state.generalNotes,
         sessions: state.sessions,
         updated_at: new Date().toISOString()
@@ -1182,24 +1305,35 @@
       var { error } = await sb.from("user_fitness_data").upsert(payload);
       if (dot) dot.classList.remove("syncing");
       if (error) showToast("Senkronizasyon hatası: " + error.message);
-    }, 400);
+    }, 350);
   }
 
   async function loadFromCloud() {
     if (!currentUser) return;
-    var { data, error } = await sb.from("user_fitness_data").select("*").eq("user_id", currentUser.id).maybeSingle();
+    var { data } = await sb.from("user_fitness_data").select("*").eq("user_id", currentUser.id).maybeSingle();
     if (data) {
       state.name = data.display_name || currentUser.email.split("@")[0];
       state.startDate = data.start_date || toISO(normalizeToMonday(today()));
-      state.program = (data.program && Object.keys(data.program).length) ? data.program : JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
       state.generalNotes = Array.isArray(data.general_notes) ? data.general_notes : DEFAULT_NOTES.slice();
       state.sessions = data.sessions || {};
+
+      // Çoklu program formatı veya eski tekli program formatı kontrolü (veri kaybını önler)
+      if (data.program && Array.isArray(data.program.list) && data.program.list.length > 0) {
+        state.library = data.program;
+      } else if (data.program && data.program["Pazartesi"]) {
+        state.library = {
+          activeId: "prog_migrated",
+          list: [{ id: "prog_migrated", name: "Mevcut Programım", days: data.program }]
+        };
+        saveToCloud();
+      } else {
+        state.library = createDefaultLibrary();
+      }
     } else {
-      // İlk kez giriş yapan kullanıcıya başlangıç profili oluştur
       var regName = $("#regNameInput").value.trim();
       state.name = regName || currentUser.email.split("@")[0];
       state.startDate = toISO(normalizeToMonday(today()));
-      state.program = JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+      state.library = createDefaultLibrary();
       state.generalNotes = DEFAULT_NOTES.slice();
       state.sessions = {};
       saveToCloud();
@@ -1207,7 +1341,7 @@
     renderAll();
   }
 
-  // AUTH İŞLEMLERİ
+  // AUTH
   $("#tabLogin").addEventListener("click", function () {
     authMode = "login";
     $("#tabLogin").classList.add("active");
@@ -1222,14 +1356,12 @@
     $("#regNameField").style.display = "block";
     $("#authSubmitBtn").textContent = "Hesap Oluştur";
   });
-
   $("#authSubmitBtn").addEventListener("click", async function () {
     var email = $("#authEmail").value.trim();
     var password = $("#authPass").value;
     if (!email || password.length < 6) { showToast("Geçerli e-posta ve en az 6 haneli şifre gir"); return; }
     var btn = $("#authSubmitBtn");
-    btn.disabled = true;
-    btn.textContent = "Bekleyin...";
+    btn.disabled = true; btn.textContent = "Bekleyin...";
     try {
       if (authMode === "login") {
         var res = await sb.auth.signInWithPassword({ email: email, password: password });
@@ -1247,12 +1379,11 @@
     }
   });
 
-  // PROGRAM & OTURUM HESAPLAMALARI
+  // HESAPLAMALAR
   function getDayKeyForDate(date) {
     if (!state.startDate) return "Pazartesi";
     var diff = daysBetween(fromISO(state.startDate), date);
-    var idx = ((diff % 7) + 7) % 7;
-    return WEEK_DAYS[idx];
+    return WEEK_DAYS[((diff % 7) + 7) % 7];
   }
   function getMuscleGroup(exObj) {
     if (exObj.group) return exObj.group;
@@ -1299,7 +1430,8 @@
   }
 
   function getDayProgress(dateISO, dayKey) {
-    var prog = state.program[dayKey];
+    var days = getActiveDays();
+    var prog = days[dayKey];
     if (!prog || prog.rest || !prog.ex) return { total: 0, done: 0 };
     var total = 0, done = 0;
     prog.ex.forEach(function (ex) {
@@ -1312,8 +1444,9 @@
 
   function calculateStreak() {
     if (!state.startDate) return 0;
+    var days = getActiveDays();
     var t = today(), start = fromISO(state.startDate), d = new Date(t);
-    var todayKey = getDayKeyForDate(t), todayProg = state.program[todayKey];
+    var todayKey = getDayKeyForDate(t), todayProg = days[todayKey];
     var todayISO = toISO(t), startFromToday = false;
     if (!todayProg || todayProg.rest) startFromToday = true;
     else {
@@ -1323,7 +1456,7 @@
     if (!startFromToday) d.setDate(d.getDate() - 1);
     var streak = 0, guard = 0;
     while (guard++ < 365 && d.getTime() >= start.getTime()) {
-      var iso = toISO(d), dk = getDayKeyForDate(d), dp = state.program[dk];
+      var iso = toISO(d), dk = getDayKeyForDate(d), dp = days[dk];
       if (!dp || dp.rest) streak++;
       else {
         var ss = state.sessions[iso], hasAny = false;
@@ -1366,14 +1499,16 @@
   function renderHeader() {
     $("#headerName").textContent = state.name || "Antrenman";
     var st = calculateStreak();
-    $("#headerSub").textContent = st > 0 ? "🔥 " + st + " gün streak" : "Programı takip et";
+    var activeProgName = getActiveProgramObj().name;
+    $("#headerSub").textContent = (st > 0 ? "🔥 " + st + " gün · " : "") + activeProgName;
   }
 
-  // 1. ANTRENMAN EKRANI RENDER
+  // 1. ANTRENMAN EKRANI
   function renderWorkout() {
     var dateISO = toISO(selectedDate);
     var dayKey = getDayKeyForDate(selectedDate);
-    var prog = state.program[dayKey] || { rest: true, ex: [] };
+    var days = getActiveDays();
+    var prog = days[dayKey] || { rest: true, ex: [] };
 
     $("#dateMain").textContent = formatDateTR(selectedDate);
     var diff = daysBetween(today(), selectedDate);
@@ -1385,7 +1520,7 @@
     if (gt) gt.addEventListener("click", function () { selectedDate = today(); renderWorkout(); });
 
     if (prog.rest || !prog.ex || prog.ex.length === 0) {
-      $("#workoutContent").innerHTML = '<div class="rest-card"><div class="moon">🌙</div><h3>' + (prog.rest ? 'Dinlenme Günü' : 'Hareket Eklenmemiş') + '</h3><p>' + (prog.rest ? 'Bugün antrenman yok. İyi dinlen!' : 'Bu gün için henüz hareket yok. "Programım" sekmesinden ekleyebilirsin.') + '</p></div>';
+      $("#workoutContent").innerHTML = '<div class="rest-card"><div class="moon">🌙</div><h3>' + (prog.rest ? 'Dinlenme Günü' : 'Hareket Eklenmemiş') + '</h3><p>' + (prog.rest ? 'Bugün antrenman yok. İyi dinlen!' : 'Aktif programda bu gün için hareket yok. "Programım" sekmesinden ekleyebilirsin.') + '</p></div>';
       if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
       return;
     }
@@ -1405,7 +1540,6 @@
     }
     html += '</div>';
 
-    // Kalori + Set Arası Dinlenme Sayacı Butonu
     html += '<div class="meta-row"><div class="meta-tile">';
     html += '<svg viewBox="0 0 24 24"><path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 1-3s1 2 3 2c0 0-2-4 0-7z"/></svg>';
     html += '<label>Kalori</label><input type="number" id="calorieInput" inputmode="numeric" value="' + (session.calories || "") + '" placeholder="0"><span class="unit">kcal</span>';
@@ -1415,7 +1549,7 @@
       html += '<div class="focus-card"><span class="star">★</span><div><strong>Odak · ' + escapeHtml(prog.focus) + '</strong>' + escapeHtml(prog.focusNote) + '</div></div>';
     }
 
-    html += '<div class="section-head"><span class="section-title">' + dayKey + ' Programı</span><span class="section-count' + (pStats.done === pStats.total ? ' done' : '') + '">' + pStats.done + ' / ' + pStats.total + '</span></div>';
+    html += '<div class="section-head"><span class="section-title">' + dayKey + ' · ' + escapeHtml(getActiveProgramObj().name) + '</span><span class="section-count' + (pStats.done === pStats.total ? ' done' : '') + '">' + pStats.done + ' / ' + pStats.total + '</span></div>';
 
     html += '<div class="ex-list">';
     prog.ex.forEach(function (ex) {
@@ -1453,7 +1587,6 @@
 
     $("#workoutContent").innerHTML = html;
 
-    // Eventler
     var sBtn = $("#startSessionBtn");
     if (sBtn) sBtn.addEventListener("click", function () {
       pushUndo();
@@ -1526,15 +1659,35 @@
     }
   }
 
-  // 2. PROGRAMIM (DİNAMİK EDİTÖR) RENDER
+  // 2. PROGRAMIM (ÇOKLU PROGRAM KÜTÜPHANESİ + EDİTÖR)
   function renderProgramEditor() {
-    var html = '<div class="day-pills">';
+    var activeProg = getActiveProgramObj();
+    var days = activeProg.days;
+
+    // Üst Kütüphane Yönetimi Kartı
+    var html = '<div class="prog-manager-card">';
+    html += '<div class="prog-manager-top"><span class="section-title" style="padding:0;">Kayıtlı Programlar (' + state.library.list.length + ')</span><span class="prog-badge">● Aktif Program</span></div>';
+    html += '<div class="prog-select-wrap"><select class="prog-select" id="activeProgSelect">';
+    state.library.list.forEach(function (p) {
+      html += '<option value="' + escapeHtml(p.id) + '"' + (p.id === activeProg.id ? ' selected' : '') + '>' + escapeHtml(p.name) + '</option>';
+    });
+    html += '</select><span class="prog-select-arrow">▼</span></div>';
+
+    html += '<div class="prog-toolbar">';
+    html += '<button class="tool-btn accent" onclick="openProgNameModal(\'create\')"><span>+ Yeni</span><span>Boş</span></button>';
+    html += '<button class="tool-btn" onclick="openProgNameModal(\'duplicate\')"><span>❐ Farklı</span><span>Kaydet</span></button>';
+    html += '<button class="tool-btn" onclick="openProgNameModal(\'rename\')"><span>✎ Adını</span><span>Değiştir</span></button>';
+    html += '<button class="tool-btn danger" onclick="deleteActiveProgram()"><span>🗑 Programı</span><span>Sil</span></button>';
+    html += '</div></div>';
+
+    // Gün Seçim Hapları
+    html += '<div class="day-pills">';
     WEEK_DAYS.forEach(function (d) {
       html += '<button class="day-pill' + (d === editorDay ? ' active' : '') + '" data-ed-day="' + d + '">' + d + '</button>';
     });
     html += '</div>';
 
-    var dayObj = state.program[editorDay] || { rest: false, ex: [] };
+    var dayObj = days[editorDay] || { rest: false, ex: [] };
 
     html += '<div class="settings-group" style="margin-bottom:1rem;">';
     html += '<div class="settings-row"><div class="label-wrap"><span>' + editorDay + ' Dinlenme Günü</span><span class="sub">Aktifse bu gün antrenman yapılmaz</span></div>';
@@ -1564,6 +1717,15 @@
 
     $("#programContent").innerHTML = html;
 
+    // Program Seçici Değişikliği
+    $("#activeProgSelect").addEventListener("change", function (e) {
+      state.library.activeId = e.target.value;
+      saveToCloud();
+      renderHeader();
+      renderProgramEditor();
+      showToast("Aktif program: " + getActiveProgramObj().name);
+    });
+
     $("#programContent").querySelectorAll("[data-ed-day]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         editorDay = btn.dataset.edDay;
@@ -1572,18 +1734,91 @@
     });
 
     $("#toggleRestDay").addEventListener("change", function (e) {
-      if (!state.program[editorDay]) state.program[editorDay] = { rest: false, ex: [] };
-      state.program[editorDay].rest = e.target.checked;
+      if (!days[editorDay]) days[editorDay] = { rest: false, ex: [] };
+      days[editorDay].rest = e.target.checked;
       saveToCloud();
       renderProgramEditor();
       showToast(e.target.checked ? editorDay + " dinlenme günü yapıldı" : editorDay + " antrenman günü yapıldı");
     });
   }
 
+  // PROGRAM KÜTÜPHANE MODAL İŞLEMLERİ
+  var progNameAction = "create";
+  window.openProgNameModal = function (action) {
+    progNameAction = action;
+    var activeProg = getActiveProgramObj();
+    if (action === "create") {
+      $("#progNameModalTitle").textContent = "Yeni Boş Program Oluştur";
+      $("#progNameModalSub").textContent = "Sıfırdan oluşturacağın programın adını yaz";
+      $("#progNameInput").value = "";
+    } else if (action === "duplicate") {
+      $("#progNameModalTitle").textContent = "Programı Farklı Kaydet";
+      $("#progNameModalSub").textContent = "Mevcut programın kopyası oluşturulacak";
+      $("#progNameInput").value = activeProg.name + " (Kopya)";
+    } else if (action === "rename") {
+      $("#progNameModalTitle").textContent = "Program Adını Değiştir";
+      $("#progNameModalSub").textContent = "Aktif programın yeni adını yaz";
+      $("#progNameInput").value = activeProg.name;
+    }
+    $("#progNameModal").classList.add("show");
+    setTimeout(function () { $("#progNameInput").focus(); }, 60);
+  };
+
+  window.closeProgNameModal = function () {
+    $("#progNameModal").classList.remove("show");
+  };
+
+  $("#progNameConfirmBtn").addEventListener("click", function () {
+    var name = $("#progNameInput").value.trim();
+    if (!name) { showToast("Program adı boş olamaz"); return; }
+    var activeProg = getActiveProgramObj();
+
+    if (progNameAction === "create") {
+      var newId = "prog_" + Date.now();
+      state.library.list.push({ id: newId, name: name, days: createEmptyDays() });
+      state.library.activeId = newId;
+      showToast('"' + name + '" oluşturuldu ve devreye alındı');
+    } else if (progNameAction === "duplicate") {
+      var copyId = "prog_" + Date.now();
+      state.library.list.push({
+        id: copyId,
+        name: name,
+        days: JSON.parse(JSON.stringify(activeProg.days))
+      });
+      state.library.activeId = copyId;
+      showToast('"' + name + '" olarak kaydedildi');
+    } else if (progNameAction === "rename") {
+      activeProg.name = name;
+      showToast("Program adı güncellendi");
+    }
+
+    saveToCloud();
+    closeProgNameModal();
+    renderHeader();
+    renderProgramEditor();
+  });
+
+  window.deleteActiveProgram = function () {
+    if (state.library.list.length <= 1) {
+      showToast("En az 1 kayıtlı program kalmalıdır");
+      return;
+    }
+    var activeProg = getActiveProgramObj();
+    if (!confirm('"' + activeProg.name + '" programını silmek istediğine emin misin?')) return;
+    state.library.list = state.library.list.filter(function (p) { return p.id !== activeProg.id; });
+    state.library.activeId = state.library.list[0].id;
+    saveToCloud();
+    renderHeader();
+    renderProgramEditor();
+    showToast("Program silindi");
+  };
+
+  // HAREKET EDİTÖRÜ
   window.openExEditor = function (idx) {
-    var dayObj = state.program[editorDay] || { rest: false, ex: [] };
+    var days = getActiveDays();
+    var dayObj = days[editorDay] || { rest: false, ex: [] };
     $("#editExIdx").value = idx;
-    $("#exModalDaySub").textContent = editorDay;
+    $("#exModalDaySub").textContent = editorDay + " (" + getActiveProgramObj().name + ")";
     if (idx >= 0 && dayObj.ex[idx]) {
       var ex = dayObj.ex[idx];
       $("#exModalTitle").textContent = "Hareketi Düzenle";
@@ -1621,33 +1856,35 @@
     var focusNote = $("#exFocusNoteInput").value.trim();
     if (!name) { showToast("Hareket adı yazmalısın"); return; }
 
-    if (!state.program[editorDay]) state.program[editorDay] = { rest: false, ex: [] };
-    if (!state.program[editorDay].ex) state.program[editorDay].ex = [];
+    var days = getActiveDays();
+    if (!days[editorDay]) days[editorDay] = { rest: false, ex: [] };
+    if (!days[editorDay].ex) days[editorDay].ex = [];
 
     var idx = parseInt($("#editExIdx").value, 10);
     var exObj = { name: name, sets: sets, reps: reps, group: group };
-    if (idx >= 0) state.program[editorDay].ex[idx] = exObj;
-    else state.program[editorDay].ex.push(exObj);
+    if (idx >= 0) days[editorDay].ex[idx] = exObj;
+    else days[editorDay].ex.push(exObj);
 
     if (isFocus) {
-      state.program[editorDay].focus = name;
-      state.program[editorDay].focusNote = focusNote || "Bugünün ana hareketi. Formu koruyarak son 1-2 tekrar zorla.";
-    } else if (state.program[editorDay].focus === name) {
-      delete state.program[editorDay].focus;
-      delete state.program[editorDay].focusNote;
+      days[editorDay].focus = name;
+      days[editorDay].focusNote = focusNote || "Bugünün ana hareketi. Formu koruyarak son 1-2 tekrar zorla.";
+    } else if (days[editorDay].focus === name) {
+      delete days[editorDay].focus;
+      delete days[editorDay].focusNote;
     }
 
     saveToCloud();
     $("#exEditorModal").classList.remove("show");
     renderProgramEditor();
-    showToast("Program güncellendi");
+    showToast("Hareket kaydedildi");
   });
 
   window.deleteProgEx = function (idx) {
     if (!confirm("Bu hareketi programdan silmek istiyor musun?")) return;
-    var removed = state.program[editorDay].ex.splice(idx, 1)[0];
-    if (removed && state.program[editorDay].focus === removed.name) {
-      delete state.program[editorDay].focus;
+    var days = getActiveDays();
+    var removed = days[editorDay].ex.splice(idx, 1)[0];
+    if (removed && days[editorDay].focus === removed.name) {
+      delete days[editorDay].focus;
     }
     saveToCloud();
     renderProgramEditor();
@@ -1716,8 +1953,9 @@
     updateRestClock();
   };
 
-  // 3. TAKVİM RENDER
+  // 3. TAKVİM
   function renderCalendar() {
+    var days = getActiveDays();
     var y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
     $("#calMonthLabel").textContent = MONTHS_TR[m] + " " + y;
     var html = "";
@@ -1726,7 +1964,7 @@
     for (var i = 0; i < startWeekday; i++) html += '<div class="cal-cell empty"></div>';
     var t = today();
     for (var d = 1; d <= daysInMonth; d++) {
-      var date = new Date(y, m, d), iso = toISO(date), dk = getDayKeyForDate(date), dp = state.program[dk];
+      var date = new Date(y, m, d), iso = toISO(date), dk = getDayKeyForDate(date), dp = days[dk];
       var cls = "cal-cell" + (toISO(t) === iso ? " today" : "") + (date.getTime() > t.getTime() ? " future" : "");
       var dot = "";
       if (dp && !dp.rest && dp.ex && dp.ex.length) {
@@ -1759,6 +1997,7 @@
   }
 
   function collectRangeStats(startISO, endISO) {
+    var days = getActiveDays();
     var sessions = 0, setsCount = 0, duration = 0, calories = 0, volume = 0;
     var groups = {};
     GROUP_ORDER.forEach(function (g) { groups[g] = 0; });
@@ -1766,7 +2005,7 @@
       if (iso < startISO || iso > endISO) continue;
       var s = state.sessions[iso];
       if (!s || !s.sets) continue;
-      var dk = getDayKeyForDate(fromISO(iso)), prog = state.program[dk];
+      var dk = getDayKeyForDate(fromISO(iso)), prog = days[dk];
       if (!prog || prog.rest || !prog.ex) continue;
       var hasAny = false;
       prog.ex.forEach(function (ex) {
@@ -1828,7 +2067,6 @@
     $("#openCardBtn").addEventListener("click", openCardModal);
   }
 
-  // STORY KARTI CANVAS ÇİZİMİ
   var currentCardBlob = null, currentCardDataURL = null;
   function openCardModal() {
     var now = today();
@@ -1880,7 +2118,7 @@
     var bgTop = isDark ? "#0F0F14" : "#FFFFFF", bgBottom = isDark ? "#000000" : "#F2F2F7";
     var text = isDark ? "#FFFFFF" : "#000000", text3 = "#8E8E93";
     var sep = isDark ? "rgba(255,255,255,0.10)" : "rgba(60,60,67,0.12)";
-    var accent = isDark ? "#0A84FF" : "#007AFF", success = isDark ? "#30D158" : "#34C759";
+    var accent = isDark ? "#0A84FF" : "#007AFF";
 
     var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
     bgGrad.addColorStop(0, bgTop); bgGrad.addColorStop(1, bgBottom);
@@ -1946,7 +2184,7 @@
     ctx.fillText("antrenman günlüğü", W / 2, H - 105);
   }
 
-  // 5. AYARLAR RENDER
+  // 5. AYARLAR
   function renderSettings() {
     var html = '<div class="settings-group-title">Profil & Hesap</div><div class="settings-group">';
     html += '<div class="settings-row"><div class="label-wrap"><span>İsim Soyisim</span></div><input type="text" id="settingsName" value="' + escapeHtml(state.name || "") + '"></div>';
@@ -1954,9 +2192,9 @@
     html += '<button class="settings-row primary" id="saveProfileBtn"><span>Değişiklikleri Kaydet</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
     html += '</div>';
 
-    html += '<div class="settings-group-title">Program Şablonları & Yedek</div><div class="settings-group">';
-    html += '<button class="settings-row primary" id="loadDefaultProgBtn"><div class="label-wrap"><span>Varsayılan Programı Yükle</span><span class="sub">5 günlük Full Body / Kondisyon şablonunu yükler</span></div><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
-    html += '<button class="settings-row primary" id="backupBtn"><div class="label-wrap"><span>JSON Yedek İndir</span><span class="sub">Tüm verilerini cihazına kaydet</span></div><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>';
+    html += '<div class="settings-group-title">Hazır Şablon & Yedek</div><div class="settings-group">';
+    html += '<button class="settings-row primary" id="addDefaultProgBtn"><div class="label-wrap"><span>Varsayılan Şablonu Kütüphaneye Ekle</span><span class="sub">Mevcut programlarını silmeden yeni bir kayıt olarak ekler</span></div><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    html += '<button class="settings-row primary" id="backupBtn"><div class="label-wrap"><span>JSON Yedek İndir</span><span class="sub">Tüm programlarını ve geçmişini cihazına kaydet</span></div><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>';
     html += '</div>';
 
     html += '<div class="settings-group-title">Oturum</div><div class="settings-group">';
@@ -1976,11 +2214,17 @@
       showToast("Profil kaydedildi");
     });
 
-    $("#loadDefaultProgBtn").addEventListener("click", function () {
-      if (!confirm("Mevcut haftalık program şablonun varsayılan programla değiştirilecek. Onaylıyor musun?")) return;
-      state.program = JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
+    $("#addDefaultProgBtn").addEventListener("click", function () {
+      var newId = "prog_" + Date.now();
+      state.library.list.push({
+        id: newId,
+        name: "5 Günlük Şablon (" + state.library.list.length + ")",
+        days: JSON.parse(JSON.stringify(DEFAULT_DAYS))
+      });
+      state.library.activeId = newId;
       saveToCloud();
-      showToast("Varsayılan program yüklendi");
+      renderHeader();
+      showToast("Şablon kütüphaneye eklendi ve aktif edildi");
     });
 
     $("#backupBtn").addEventListener("click", function () {
@@ -2028,7 +2272,6 @@
     if (currentView === "settings") renderSettings();
   }
 
-  // BAŞLANGIÇ OTURUM DİNLEYİCİSİ
   sb.auth.onAuthStateChange(function (_event, session) {
     if (session && session.user) {
       currentUser = session.user;
