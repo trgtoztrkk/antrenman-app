@@ -1,644 +1,789 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Antrenman Takip</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #fafafa; -webkit-tap-highlight-color: transparent; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Antrenman">
+<meta name="theme-color" content="#F2F2F7">
+<title>Antrenman</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #F2F2F7;
+    --surface: #FFFFFF;
+    --surface-2: #E5E5EA;
+    --surface-3: #D1D1D6;
+    --separator: rgba(60, 60, 67, 0.12);
+    --separator-strong: rgba(60, 60, 67, 0.24);
+    --text: #000000;
+    --text-2: #3C3C43;
+    --text-3: #8E8E93;
+    --accent: #007AFF;
+    --accent-soft: rgba(0, 122, 255, 0.12);
+    --success: #34C759;
+    --success-soft: rgba(52, 199, 89, 0.12);
+    --warning: #FF9500;
+    --danger: #FF3B30;
+    --focus: #FFCC00;
+    --focus-soft: rgba(255, 204, 0, 0.15);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  [data-theme="dark"] {
+    --bg: #000000;
+    --surface: #1C1C1E;
+    --surface-2: #2C2C2E;
+    --surface-3: #3A3A3C;
+    --separator: rgba(255, 255, 255, 0.09);
+    --separator-strong: rgba(255, 255, 255, 0.18);
+    --text: #FFFFFF;
+    --text-2: #EBEBF5;
+    --text-3: #8E8E93;
+    --accent: #0A84FF;
+    --accent-soft: rgba(10, 132, 255, 0.18);
+    --success: #30D158;
+    --success-soft: rgba(48, 209, 88, 0.18);
+    --warning: #FF9F0A;
+    --danger: #FF453A;
+    --focus: #FFD60A;
+    --focus-soft: rgba(255, 214, 10, 0.18);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+    overscroll-behavior-y: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  button, input, select, textarea { font-family: inherit; }
+  button { cursor: pointer; -webkit-appearance: none; appearance: none; }
+
+  /* AUTH & ONBOARDING SCREEN */
+  .onboard {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+  .onboard.show { display: flex; animation: fadeIn 0.35s ease; }
+  .onboard-card { width: 100%; max-width: 370px; }
+  .onboard-logo {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    box-shadow: 0 8px 20px -6px rgba(0, 122, 255, 0.45);
+  }
+  .onboard-logo svg { width: 28px; height: 28px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .onboard-card h1 {
+    margin: 0 0 0.4rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.03em;
+  }
+  .onboard-card > p {
+    margin: 0 0 1.5rem;
+    font-size: 0.88rem;
+    color: var(--text-3);
+    line-height: 1.5;
+    text-align: center;
+  }
+  .auth-tabs {
+    display: flex;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 2px;
+    margin-bottom: 1.25rem;
+  }
+  .auth-tabs button {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .auth-tabs button.active {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+  .field { margin-bottom: 0.75rem; }
+  .field label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-3);
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+    padding-left: 0.15rem;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 0.82rem 0.95rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--separator);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field-hint {
+    font-size: 0.72rem;
+    color: var(--text-3);
+    margin-top: 0.35rem;
+    padding-left: 0.15rem;
+    line-height: 1.4;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: var(--radius-md);
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.96rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.5; }
+
+  /* HEADER */
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: calc(var(--safe-top) + 0.75rem) 1rem 0.75rem;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 0.5px solid var(--separator);
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .header-info { flex: 1; min-width: 0; }
+  .header-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+  .sync-dot.syncing { background: var(--warning); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .header-sub {
+    font-size: 0.78rem;
+    color: var(--text-3);
+    margin-top: 0.1rem;
+    font-weight: 400;
+  }
+  .header-actions { display: flex; gap: 0.25rem; align-items: center; flex: 0 0 auto; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .icon-btn:active { background: var(--accent-soft); transform: scale(0.92); }
+  .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* SEGMENTED TABS */
+  .segmented-wrap { padding: 0.75rem 1rem 1rem; max-width: 600px; margin: 0 auto; }
+  .segmented {
+    display: flex;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .segmented button {
+    flex: 1;
+    padding: 0.5rem 0.25rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.74rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .segmented button.active {
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+  }
+
+  .view { display: none; padding: 0 1rem 5.5rem; max-width: 600px; margin: 0 auto; }
+  .view.active { display: block; animation: fadeUp 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  /* DATE NAV */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.25rem 1rem;
+    gap: 0.5rem;
+  }
+  .date-arrow {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--separator);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .date-arrow:active { background: var(--surface-2); transform: scale(0.92); }
+  .date-arrow svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .date-center { flex: 1; text-align: center; min-width: 0; }
+  .date-main { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .date-sub { font-size: 0.75rem; color: var(--text-3); margin-top: 0.1rem; }
+  .date-sub .today-action { color: var(--accent); font-weight: 500; cursor: pointer; }
+
+  /* SESSION TIMER & REST TIMER */
+  .session-block { margin-bottom: 0.85rem; }
+  .btn-session {
+    width: 100%;
+    padding: 0.88rem;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 0.94rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .btn-session:active { transform: scale(0.99); opacity: 0.9; }
+  .btn-session.start { background: var(--accent); color: #fff; }
+  .btn-session.end { background: var(--surface); color: var(--danger); border: 1px solid var(--separator); }
+  .btn-session svg { width: 16px; height: 16px; fill: currentColor; }
+  .btn-session.end svg { fill: none; stroke: currentColor; stroke-width: 2; }
+  .session-running { display: flex; gap: 0.5rem; }
+  .timer-display {
+    flex: 0 0 auto;
+    min-width: 100px;
+    padding: 0.88rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    border: 1px solid var(--separator);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .session-done {
+    padding: 0.88rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--success-soft);
+    color: var(--success);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .meta-row { display: flex; gap: 0.5rem; margin-bottom: 1.15rem; }
+  .meta-tile {
+    flex: 1;
+    padding: 0.72rem 0.9rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid var(--separator);
+  }
+  .meta-tile svg { width: 16px; height: 16px; stroke: var(--text-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+  .meta-tile label { font-size: 0.78rem; color: var(--text-3); font-weight: 500; }
+  .meta-tile input {
+    flex: 1; min-width: 0;
+    background: transparent; border: none;
+    color: var(--text); font-size: 0.95rem; font-weight: 600;
+    text-align: right; padding: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .meta-tile input:focus { outline: none; }
+  .meta-tile .unit { font-size: 0.75rem; color: var(--text-3); font-weight: 500; }
+
+  .rest-pill-btn {
+    padding: 0.72rem 0.95rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--separator);
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .rest-pill-btn:active { background: var(--surface-2); }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 0.25rem 0.5rem;
+  }
+  .section-title {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .section-count { font-size: 0.8rem; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .section-count.done { color: var(--success); font-weight: 600; }
+
+  .focus-card {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    background: var(--focus-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-2);
+  }
+  .focus-card .star { flex: 0 0 auto; color: var(--focus); font-size: 1rem; line-height: 1.2; margin-top: 0.05rem; }
+  .focus-card strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 0.15rem; font-size: 0.82rem; }
+
+  .ex-list {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--separator);
+  }
+  .ex-row {
+    padding: 0.95rem 1rem 0.9rem;
+    border-bottom: 0.5px solid var(--separator);
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .ex-row:last-child { border-bottom: none; }
+  .ex-row.focus::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 12px; bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--focus);
+  }
+  .ex-row.focus.done::before { background: var(--success); }
+
+  .ex-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+  }
+  .ex-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+  .ex-row.done .ex-name { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-3); }
+  .focus-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.45rem;
+    border-radius: 100px;
+    background: var(--focus-soft);
+    color: var(--text);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .group-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.1rem 0.42rem;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text-3);
+  }
+  .ex-reps { font-size: 0.82rem; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; flex: 0 0 auto; }
+
+  .sets-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .sets { display: flex; gap: 0.42rem; flex-wrap: wrap; }
+  .set {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--separator-strong);
+    background: transparent;
+    color: var(--text-3);
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    transition: all 0.2s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  .set:active { transform: scale(0.9); }
+  .set.done { background: var(--accent); border-color: var(--accent); color: #fff; transform: scale(1.02); }
+  .ex-row.done .set.done { background: var(--success); border-color: var(--success); }
+
+  .weight-btn {
+    flex: 0 0 auto;
+    padding: 0.4rem 0.75rem;
+    border-radius: 100px;
+    background: var(--surface-2);
+    color: var(--text-3);
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+  .weight-btn:active { transform: scale(0.94); }
+  .weight-btn.has-weight { background: var(--accent-soft); color: var(--accent); }
+
+  .rest-card {
+    padding: 2.75rem 1.5rem;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--separator);
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  .rest-card .moon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.7; }
+  .rest-card h3 { margin: 0 0 0.35rem; font-size: 1rem; font-weight: 600; }
+  .rest-card p { margin: 0; font-size: 0.85rem; color: var(--text-3); line-height: 1.5; }
+
+  .notes-section { margin-top: 1.35rem; }
+  .notes-section > h3 {
+    font-size: 0.75rem; color: var(--text-3); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.5rem 0.25rem;
+  }
+  .notes-list {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--separator);
+    padding: 0.9rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+  .notes-list ul { margin: 0; padding-left: 1.1rem; }
+  .notes-list li { margin-bottom: 0.25rem; }
+  .notes-list li:last-child { margin-bottom: 0; }
+
+  /* PROGRAM EDITOR VIEW */
+  .day-pills {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    scrollbar-width: none;
+  }
+  .day-pills::-webkit-scrollbar { display: none; }
+  .day-pill {
+    padding: 0.5rem 0.85rem;
+    border-radius: 100px;
+    border: 1px solid var(--separator);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .day-pill.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .prog-ex-card {
+    background: var(--surface);
+    border: 1px solid var(--separator);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .prog-ex-info { flex: 1; min-width: 0; }
+  .prog-ex-title { font-size: 0.94rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+  .prog-ex-meta { font-size: 0.78rem; color: var(--text-3); margin-top: 0.2rem; }
+  .prog-ex-actions { display: flex; gap: 0.3rem; flex: 0 0 auto; }
+  .mini-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--separator);
+    background: var(--bg);
+    color: var(--text-2);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .mini-btn.danger { color: var(--danger); }
+  .mini-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* STATS & CALENDAR & SETTINGS */
+  .stats-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--separator);
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  .stats-card > h3 {
+    font-size: 0.72rem; color: var(--text-3); text-transform: uppercase;
+    letter-spacing: 0.06em; font-weight: 500; margin: 0 0 0.75rem;
+  }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .stat-tile { background: var(--surface-2); border-radius: var(--radius-md); padding: 0.75rem 0.85rem; display: flex; flex-direction: column; gap: 0.15rem; }
+  .stat-value { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--text); line-height: 1.1; }
+  .stat-label { font-size: 0.72rem; color: var(--text-3); font-weight: 500; }
+
+  .donut-wrap { display: flex; align-items: center; gap: 1rem; }
+  .donut { width: 116px; height: 116px; flex: 0 0 auto; }
+  .donut-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .donut-legend-item { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.78rem; }
+  .donut-legend-label { display: flex; align-items: center; gap: 0.4rem; color: var(--text-2); font-weight: 500; }
+  .donut-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+  .donut-legend-value { color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; font-size: 0.72rem; white-space: nowrap; }
+  .stats-empty { text-align: center; color: var(--text-3); font-size: 0.82rem; padding: 1.5rem 0; }
+
+  .card-cta {
+    display: flex; align-items: center; gap: 0.85rem; width: 100%; padding: 1rem 1.1rem;
+    background: linear-gradient(135deg, var(--accent), #5856D6);
+    color: #fff; border: none; border-radius: var(--radius-lg); margin-bottom: 1rem; text-align: left;
+    box-shadow: 0 8px 20px -8px rgba(0, 122, 255, 0.5);
+  }
+  .card-cta-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .card-cta-icon svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2; }
+  .card-cta-text { flex: 1; min-width: 0; }
+  .card-cta-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.15rem; }
+  .card-cta-sub { font-size: 0.75rem; opacity: 0.85; }
+  .card-cta-arrow { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2.5; opacity: 0.7; }
+
+  .cal-head { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.25rem 1rem; gap: 0.5rem; }
+  .cal-month { flex: 1; text-align: center; font-size: 1rem; font-weight: 600; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--separator); padding: 0.75rem 0.6rem 1rem; }
+  .cal-header { text-align: center; font-size: 0.68rem; font-weight: 500; color: var(--text-3); padding: 0.4rem 0; }
+  .cal-cell { aspect-ratio: 1; border-radius: 8px; background: transparent; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 500; color: var(--text); position: relative; padding: 0; font-variant-numeric: tabular-nums; }
+  .cal-cell.empty { pointer-events: none; }
+  .cal-cell.future { color: var(--text-3); opacity: 0.35; pointer-events: none; }
+  .cal-cell.today { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .cal-cell.complete { background: var(--success-soft); color: var(--success); font-weight: 600; }
+  .cal-cell.partial { background: var(--surface-2); color: var(--text); }
+  .cal-dot { position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+  .cal-cell.complete .cal-dot { background: var(--success); }
+  .cal-cell.partial .cal-dot { background: var(--warning); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; padding: 0 0.5rem; font-size: 0.75rem; color: var(--text-3); }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend-dot.complete { background: var(--success); }
+  .legend-dot.partial { background: var(--warning); }
+  .legend-dot.pending { background: var(--accent); }
+
+  .settings-group { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--separator); overflow: hidden; margin-bottom: 1.25rem; }
+  .settings-group-title { font-size: 0.72rem; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 0.25rem 0.5rem; }
+  .settings-row {
+    padding: 0.9rem 1rem; border-bottom: 0.5px solid var(--separator);
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    font-size: 0.92rem; background: transparent; border-left: none; border-right: none; border-top: none;
+    width: 100%; text-align: left; color: var(--text);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row:active { background: var(--surface-2); }
+  .settings-row.danger { color: var(--danger); }
+  .settings-row.primary { color: var(--accent); font-weight: 600; }
+  .settings-row svg { width: 16px; height: 16px; stroke: var(--text-3); fill: none; stroke-width: 2; flex: 0 0 auto; }
+  .settings-row .label-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+  .settings-row .sub { font-size: 0.75rem; color: var(--text-3); font-weight: 400; }
+  .settings-row input[type="text"], .settings-row input[type="date"] {
+    flex: 1; text-align: right; background: transparent; border: none; color: var(--text); font-size: 0.92rem; padding: 0;
+  }
+  .settings-row input:focus { outline: none; }
+  .info-row { padding: 0.9rem 1rem; border-bottom: 0.5px solid var(--separator); display: flex; align-items: center; justify-content: space-between; font-size: 0.92rem; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .value { color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .info-row .value.strong { color: var(--text); font-weight: 600; }
+  .info-row .value.fire { color: var(--warning); font-weight: 600; }
+
+  /* MODALS & SHEETS */
+  .sheet-modal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 3500;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .sheet-modal.show { display: flex; animation: fadeIn 0.2s ease; }
+  .sheet-box {
+    width: 100%; max-width: 480px; max-height: 85vh;
+    background: var(--bg);
+    border-radius: 24px 24px 0 0;
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    padding-bottom: var(--safe-bottom);
+  }
+  .sheet-head {
+    padding: 1rem 1.25rem 0.8rem;
+    border-bottom: 0.5px solid var(--separator);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sheet-head h3 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+  .sheet-head p { margin: 0.15rem 0 0; font-size: 0.78rem; color: var(--text-3); }
+  .sheet-body { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; -webkit-overflow-scrolling: touch; }
+  .sheet-foot { padding: 0.75rem 1.1rem 1rem; border-top: 0.5px solid var(--separator); display: flex; gap: 0.5rem; }
+  .sheet-foot button {
+    flex: 1; padding: 0.85rem; border-radius: var(--radius-md); border: none; font-size: 0.92rem; font-weight: 600;
+  }
+  .btn-cancel { background: var(--surface-2); color: var(--text); }
+  .btn-save { background: var(--accent); color: #fff; }
+
+  .weight-list { flex: 1; overflow-y: auto; padding: 0.35rem 0; }
+  .weight-option {
+    width: 100%; padding: 0.9rem 1.25rem; background: transparent; border: none; color: var(--text);
+    font-size: 1.02rem; font-weight: 500; font-variant-numeric: tabular-nums; text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .weight-option:active { background: var(--surface-2); }
+  .weight-option.selected { color: var(--accent); font-weight: 700; }
+  .weight-option.selected::after { content: '✓'; font-size: 1.15rem; font-weight: 600; }
+  .weight-option.empty-option { color: var(--text-3); font-size: 0.92rem; }
+
+  .card-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .card-preview-wrap { margin-top: 1rem; border-radius: 16px; overflow: hidden; background: var(--surface-2); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+  .card-preview { display: block; width: 100%; height: auto; }
+  .btn-action { flex: 1; padding: 0.85rem; border-radius: var(--radius-md); border: none; font-size: 0.92rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.45rem; }
+  .btn-action.share { background: var(--accent); color: #fff; }
+  .btn-action.download { background: var(--surface); color: var(--text); border: 1px solid var(--separator); }
+  .btn-action svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .toast {
+    position: fixed; bottom: calc(1.5rem + var(--safe-bottom)); left: 50%;
+    transform: translateX(-50%) translateY(140%);
+    background: var(--text); color: var(--bg);
+    padding: 0.75rem 1.25rem; border-radius: 100px;
+    font-size: 0.85rem; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    z-index: 5000; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .celebration { position: fixed; inset: 0; pointer-events: none; z-index: 4999; overflow: hidden; }
+  .confetti { position: absolute; width: 6px; height: 6px; border-radius: 50%; top: -10px; animation: confettiFall 1.6s cubic-bezier(0.3, 0.6, 0.6, 1) forwards; }
+  @keyframes confettiFall { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(110vh); opacity: 0; } }
+</style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+<body>
 
-  <!-- BİLDİRİM TOAST -->
-  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xl transition-all duration-300"></div>
-
-  <!-- GİRİŞ / KAYIT EKRANI -->
-  <div id="auth-screen" class="flex-1 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
-      <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 mb-3 border border-emerald-500/20">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight text-white">Antrenman Pro</h1>
-        <p class="text-sm text-zinc-400 mt-1">Kendi programını oluştur, salonda takip et.</p>
-      </div>
-
-      <!-- Sekmeler -->
-      <div class="grid grid-cols-2 gap-1 p-1 bg-zinc-950 rounded-xl mb-6 border border-zinc-800/80">
-        <button id="tab-login" onclick="switchAuthMode('login')" class="py-2 text-sm font-medium rounded-lg bg-zinc-800 text-white transition">Giriş Yap</button>
-        <button id="tab-register" onclick="switchAuthMode('register')" class="py-2 text-sm font-medium rounded-lg text-zinc-400 hover:text-white transition">Kayıt Ol</button>
-      </div>
-
-      <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-zinc-400 mb-1.5">E-posta Adresi</label>
-          <input type="email" id="auth-email" required placeholder="ornek@mail.com"
-            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition" />
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-zinc-400 mb-1.5">Şifre</label>
-          <input type="password" id="auth-password" required minlength="6" placeholder="En az 6 karakter"
-            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition" />
-        </div>
-        <button type="submit" id="auth-submit-btn"
-          class="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">
-          Giriş Yap
-        </button>
-      </form>
+<!-- GİRİŞ / KAYIT EKRANI -->
+<div class="onboard" id="authScreen">
+  <div class="onboard-card">
+    <div class="onboard-logo">
+      <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 9v6M21 9v6"/></svg>
     </div>
+    <h1>Antrenman</h1>
+    <p>Programını oluştur, ağırlıklarını takip et ve arkadaşlarınla gelişimini paylaş.</p>
+    <div class="auth-tabs">
+      <button class="active" id="tabLogin">Giriş Yap</button>
+      <button id="tabRegister">Kayıt Ol</button>
+    </div>
+    <div class="field" id="regNameField" style="display:none;">
+      <label>İsim Soyisim</label>
+      <input type="text" id="regNameInput" placeholder="Adın Soyadın" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>E-posta</label>
+      <input type="email" id="authEmail" placeholder="ornek@mail.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Şifre</label>
+      <input type="password" id="authPass" placeholder="En az 6 karakter">
+    </div>
+    <button class="btn-primary" id="authSubmitBtn">Giriş Yap</button>
   </div>
+</div>
 
-  <!-- ANA UYGULAMA EKRANI -->
-  <div id="app-screen" class="hidden flex-1 flex flex-col max-w-3xl w-full mx-auto pb-24">
-    
-    <!-- Üst Bar -->
-    <header class="sticky top-0 z-30 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3.5 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm">
-          AP
-        </div>
-        <div>
-          <h1 class="text-base font-bold text-white leading-none">Programım</h1>
-          <p id="user-email-display" class="text-[11px] text-zinc-400 mt-1 truncate max-w-[180px] sm:max-w-xs"></p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <!-- Kronometre Tetikleyici -->
-        <button onclick="toggleTimerModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:border-zinc-700 transition">
-          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span id="mini-timer-text">Sayaç</span>
-        </button>
-        <!-- Çıkış -->
-        <button onclick="handleLogout()" title="Çıkış Yap" class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-red-500/30 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-          </svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- Gün Sekmeleri -->
-    <div class="px-4 pt-4">
-      <div id="day-tabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
-        <!-- Dinamik gün sekmeleri buraya gelecek -->
-      </div>
+<!-- ANA UYGULAMA -->
+<header class="app-header">
+  <div class="header-row">
+    <div class="header-info">
+      <div class="header-name"><span id="headerName">Antrenman</span> <span class="sync-dot" id="syncDot" title="Bulut Senkronizasyonu"></span></div>
+      <div class="header-sub" id="headerSub">Programı takip et</div>
     </div>
-
-    <!-- İçerik Alanı -->
-    <main class="flex-1 px-4 pt-2">
-      <!-- Yükleniyor -->
-      <div id="loading-state" class="py-16 text-center text-zinc-500 text-sm">
-        Programın yükleniyor...
-      </div>
-
-      <!-- Boş Ekran (Hiç hareket yoksa) -->
-      <div id="empty-state" class="hidden py-12 px-4 text-center bg-zinc-900/40 border border-dashed border-zinc-800 rounded-2xl mt-2">
-        <div class="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-3 text-zinc-400">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </div>
-        <h3 class="text-base font-semibold text-white">Henüz bir programın yok</h3>
-        <p class="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">Kendi günlerini ve hareketlerini ekleyebilir veya tek tıkla örnek bir başlangıç programı yükleyebilirsin.</p>
-        <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2.5">
-          <button onclick="openExerciseModal()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition">
-            + İlk Hareketini Ekle
-          </button>
-          <button onclick="loadSampleProgram()" id="sample-btn" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded-xl text-xs transition">
-            Örnek Program Yükle (PPL)
-          </button>
-        </div>
-      </div>
-
-      <!-- Seçili Günün Başlığı ve Hareket Listesi -->
-      <div id="workout-content" class="hidden space-y-3 mt-1">
-        <div class="flex items-center justify-between py-1">
-          <div>
-            <h2 id="current-day-title" class="text-lg font-bold text-white"></h2>
-            <p id="current-day-stats" class="text-xs text-zinc-400"></p>
-          </div>
-          <button onclick="resetTodayChecks()" class="text-xs text-zinc-400 hover:text-emerald-400 underline underline-offset-4 transition">
-            Tikleri Sıfırla
-          </button>
-        </div>
-
-        <div id="exercise-list" class="space-y-3">
-          <!-- Hareket kartları buraya gelecek -->
-        </div>
-      </div>
-    </main>
-
-    <!-- Alt Sabit Ekleme Butonu -->
-    <div class="fixed bottom-5 right-5 z-30">
-      <button onclick="openExerciseModal()" class="flex items-center gap-2 px-5 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-2xl shadow-xl shadow-emerald-500/25 transition active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        <span class="text-sm">Hareket Ekle</span>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" title="Tema">
+        <svg id="themeIcon" viewBox="0 0 24 24"></svg>
       </button>
-    </div>
-  </div>
-
-  <!-- HAREKET EKLE / DÜZENLE MODALI -->
-  <div id="exercise-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="w-full max-w-md bg-zinc-900 border-t sm:border border-zinc-800 rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="modal-title" class="text-lg font-bold text-white">Yeni Hareket Ekle</h3>
-        <button onclick="closeExerciseModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-zinc-800/60">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <form id="exercise-form" onsubmit="saveExercise(event)" class="space-y-4">
-        <input type="hidden" id="edit-id" />
-
-        <div>
-          <label class="block text-xs font-medium text-zinc-400 mb-1">Antrenman Günü / Başlığı</label>
-          <input type="text" id="input-day" list="existing-days" required placeholder="Örn: 1. Gün - Göğüs & Ön Kol"
-            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
-          <datalist id="existing-days"></datalist>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-zinc-400 mb-1">Hareket Adı</label>
-          <input type="text" id="input-name" required placeholder="Örn: Incline Dumbbell Press"
-            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-medium text-zinc-400 mb-1">Set Sayısı</label>
-            <input type="number" id="input-sets" required min="1" max="15" value="4"
-              class="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white text-center focus:outline-none focus:border-emerald-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-zinc-400 mb-1">Tekrar</label>
-            <input type="text" id="input-reps" required placeholder="8-12" value="10-12"
-              class="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white text-center focus:outline-none focus:border-emerald-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-zinc-400 mb-1">Ağırlık (Ops.)</label>
-            <input type="text" id="input-weight" placeholder="20 kg"
-              class="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white text-center focus:outline-none focus:border-emerald-500" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-zinc-400 mb-1">Not / Tempo / Dinlenme (Opsiyonel)</label>
-          <input type="text" id="input-notes" placeholder="Örn: Negatifleri 3 sn yavaş indir, 90 sn dinlen"
-            class="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
-        </div>
-
-        <div class="pt-2 flex gap-2">
-          <button type="button" onclick="closeExerciseModal()" class="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium rounded-xl text-sm transition">
-            İptal
-          </button>
-          <button type="submit" id="save-exercise-btn" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-xl text-sm transition">
-            Kaydet
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- DİNLENME KRONOMETRESİ MODALI -->
-  <div id="timer-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-xs bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center shadow-2xl">
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Dinlenme Sayacı</span>
-        <button onclick="toggleTimerModal()" class="text-zinc-400 hover:text-white">✕</button>
-      </div>
-      <div id="timer-display" class="text-5xl font-bold text-emerald-400 my-5 font-mono">01:30</div>
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <button onclick="startTimer(60)" class="py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold">60 sn</button>
-        <button onclick="startTimer(90)" class="py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold">90 sn</button>
-        <button onclick="startTimer(120)" class="py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-semibold">2 dk</button>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="stopTimer()" class="flex-1 py-2 bg-red-500/15 text-red-400 border border-red-500/20 rounded-xl text-xs font-semibold">Durdur</button>
-        <button onclick="toggleTimerModal()" class="flex-1 py-2 bg-zinc-800 text-zinc-200 rounded-xl text-xs font-semibold">Gizle</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // SUPABASE BAĞLANTI AYARLARI
-    const SUPABASE_URL = 'https://aimqmhnutgzycnrajbrq.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_5tiaAs3wr9kxdIGBVatryw_X5mu9IRm';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // UYGULAMA DURUMU (STATE)
-    let currentUser = null;
-    let authMode = 'login';
-    let allWorkouts = [];
-    let selectedDay = null;
-    let completedSets = JSON.parse(localStorage.getItem('completedSets') || '{}');
-
-    // BİLDİRİM FONKSİYONU
-    function showToast(msg, type = 'success') {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.className = `fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xl transition-all duration-300 ${
-        type === 'error' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-zinc-950'
-      }`;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 3200);
-    }
-
-    // OTURUM KONTROLÜ
-    async function init() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        currentUser = session.user;
-        showApp();
-      } else {
-        showAuth();
-      }
-
-      sb.auth.onAuthStateChange((_event, session) => {
-        if (session) {
-          currentUser = session.user;
-          showApp();
-        } else {
-          currentUser = null;
-          showAuth();
-        }
-      });
-    }
-
-    function showAuth() {
-      document.getElementById('auth-screen').classList.remove('hidden');
-      document.getElementById('app-screen').classList.add('hidden');
-    }
-
-    function showApp() {
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('app-screen').classList.remove('hidden');
-      document.getElementById('user-email-display').textContent = currentUser.email;
-      fetchWorkouts();
-    }
-
-    // GİRİŞ / KAYIT İŞLEMLERİ
-    function switchAuthMode(mode) {
-      authMode = mode;
-      const loginTab = document.getElementById('tab-login');
-      const regTab = document.getElementById('tab-register');
-      const btn = document.getElementById('auth-submit-btn');
-
-      if (mode === 'login') {
-        loginTab.className = 'py-2 text-sm font-medium rounded-lg bg-zinc-800 text-white transition';
-        regTab.className = 'py-2 text-sm font-medium rounded-lg text-zinc-400 hover:text-white transition';
-        btn.textContent = 'Giriş Yap';
-      } else {
-        regTab.className = 'py-2 text-sm font-medium rounded-lg bg-zinc-800 text-white transition';
-        loginTab.className = 'py-2 text-sm font-medium rounded-lg text-zinc-400 hover:text-white transition';
-        btn.textContent = 'Hesap Oluştur';
-      }
-    }
-
-    async function handleAuth(e) {
-      e.preventDefault();
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
-      const btn = document.getElementById('auth-submit-btn');
-      btn.disabled = true;
-      btn.textContent = 'Bekleyin...';
-
-      try {
-        if (authMode === 'login') {
-          const { error } = await sb.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          showToast('Hoş geldin!');
-        } else {
-          const { error } = await sb.auth.signUp({ email, password });
-          if (error) throw error;
-          showToast('Hesabın oluşturuldu!');
-        }
-      } catch (err) {
-        showToast(err.message || 'Bir hata oluştu.', 'error');
-      } finally {
-        btn.disabled = false;
-        switchAuthMode(authMode);
-      }
-    }
-
-    async function handleLogout() {
-      await sb.auth.signOut();
-      allWorkouts = [];
-      selectedDay = null;
-    }
-
-    // VERİTABANINDAN PROGRAMI ÇEKME
-    async function fetchWorkouts() {
-      document.getElementById('loading-state').classList.remove('hidden');
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('workout-content').classList.add('hidden');
-
-      const { data, error } = await sb
-        .from('workouts')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      document.getElementById('loading-state').classList.add('hidden');
-
-      if (error) {
-        showToast('Veriler alınamadı: ' + error.message, 'error');
-        return;
-      }
-
-      allWorkouts = data || [];
-      renderApp();
-    }
-
-    // ARAYÜZÜ ÇİZME
-    function renderApp() {
-      const dayTabsEl = document.getElementById('day-tabs');
-      const datalistEl = document.getElementById('existing-days');
-      dayTabsEl.innerHTML = '';
-      datalistEl.innerHTML = '';
-
-      if (allWorkouts.length === 0) {
-        document.getElementById('empty-state').classList.remove('hidden');
-        document.getElementById('workout-content').classList.add('hidden');
-        return;
-      }
-
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('workout-content').classList.remove('hidden');
-
-      // Benzersiz günleri çıkar
-      const days = [...new Set(allWorkouts.map(w => w.day_name))];
-      if (!selectedDay || !days.includes(selectedDay)) {
-        selectedDay = days[0];
-      }
-
-      days.forEach(day => {
-        // Datalist seçeneği
-        const opt = document.createElement('option');
-        opt.value = day;
-        datalistEl.appendChild(opt);
-
-        // Sekme butonu
-        const btn = document.createElement('button');
-        const isActive = day === selectedDay;
-        btn.textContent = day;
-        btn.onclick = () => { selectedDay = day; renderApp(); };
-        btn.className = `px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
-          isActive
-            ? 'bg-emerald-500 text-zinc-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-            : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'
-        }`;
-        dayTabsEl.appendChild(btn);
-      });
-
-      // Seçili günün hareketlerini filtrele
-      const dayExercises = allWorkouts.filter(w => w.day_name === selectedDay);
-      document.getElementById('current-day-title').textContent = selectedDay;
-      document.getElementById('current-day-stats').textContent = `${dayExercises.length} hareket • Toplam ${dayExercises.reduce((acc, x) => acc + x.sets, 0)} set`;
-
-      const listEl = document.getElementById('exercise-list');
-      listEl.innerHTML = '';
-
-      dayExercises.forEach(ex => {
-        const card = document.createElement('div');
-        card.className = 'bg-zinc-900/80 border border-zinc-800/90 rounded-2xl p-4 transition hover:border-zinc-700';
-
-        // Set baloncuklarını oluştur
-        let setBadgesHtml = '';
-        for (let i = 1; i <= ex.sets; i++) {
-          const key = `${ex.id}_${i}`;
-          const done = !!completedSets[key];
-          setBadgesHtml += `
-            <button onclick="toggleSet('${ex.id}', ${i})"
-              class="h-8 px-3 rounded-lg text-xs font-semibold border transition flex items-center gap-1 ${
-                done
-                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                  : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600'
-              }">
-              <span>${i}. Set</span>
-              ${done ? '<span>✓</span>' : ''}
-            </button>
-          `;
-        }
-
-        card.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h4 class="font-bold text-white text-base">${escapeHtml(ex.exercise_name)}</h4>
-              <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs">
-                <span class="px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-200 font-medium">${ex.sets} Set × ${escapeHtml(ex.reps)} Tekrar</span>
-                ${ex.weight ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">${escapeHtml(ex.weight)}</span>` : ''}
-              </div>
-              ${ex.notes ? `<p class="text-xs text-zinc-400 mt-2 italic">"${escapeHtml(ex.notes)}"</p>` : ''}
-            </div>
-
-            <div class="flex items-center gap-1">
-              <button onclick='openEditModal(${JSON.stringify(ex).replace(/'/g, "&#39;")})' title="Düzenle" class="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                </svg>
-              </button>
-              <button onclick="deleteExercise('${ex.id}')" title="Sil" class="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-zinc-800/80">
-            ${setBadgesHtml}
-          </div>
-        `;
-        listEl.appendChild(card);
-      });
-    }
-
-    // SET TAMAMLAMA TİKİ
-    function toggleSet(exId, setNum) {
-      const key = `${exId}_${setNum}`;
-      if (completedSets[key]) {
-        delete completedSets[key];
-      } else {
-        completedSets[key] = true;
-      }
-      localStorage.setItem('completedSets', JSON.stringify(completedSets));
-      renderApp();
-    }
-
-    function resetTodayChecks() {
-      completedSets = {};
-      localStorage.removeItem('completedSets');
-      renderApp();
-      showToast('Tüm set tikleri sıfırlandı.');
-    }
-
-    // MODAL İŞLEMLERİ (EKLE / DÜZENLE)
-    function openExerciseModal() {
-      document.getElementById('modal-title').textContent = 'Yeni Hareket Ekle';
-      document.getElementById('edit-id').value = '';
-      document.getElementById('input-day').value = selectedDay || '1. Gün';
-      document.getElementById('input-name').value = '';
-      document.getElementById('input-sets').value = '4';
-      document.getElementById('input-reps').value = '10-12';
-      document.getElementById('input-weight').value = '';
-      document.getElementById('input-notes').value = '';
-      document.getElementById('exercise-modal').classList.remove('hidden');
-    }
-
-    function openEditModal(ex) {
-      document.getElementById('modal-title').textContent = 'Hareketi Düzenle';
-      document.getElementById('edit-id').value = ex.id;
-      document.getElementById('input-day').value = ex.day_name;
-      document.getElementById('input-name').value = ex.exercise_name;
-      document.getElementById('input-sets').value = ex.sets;
-      document.getElementById('input-reps').value = ex.reps;
-      document.getElementById('input-weight').value = ex.weight || '';
-      document.getElementById('input-notes').value = ex.notes || '';
-      document.getElementById('exercise-modal').classList.remove('hidden');
-    }
-
-    function closeExerciseModal() {
-      document.getElementById('exercise-modal').classList.add('hidden');
-    }
-
-    async function saveExercise(e) {
-      e.preventDefault();
-      const id = document.getElementById('edit-id').value;
-      const payload = {
-        day_name: document.getElementById('input-day').value.trim(),
-        exercise_name: document.getElementById('input-name').value.trim(),
-        sets: parseInt(document.getElementById('input-sets').value, 10),
-        reps: document.getElementById('input-reps').value.trim(),
-        weight: document.getElementById('input-weight').value.trim(),
-        notes: document.getElementById('input-notes').value.trim()
-      };
-
-      const btn = document.getElementById('save-exercise-btn');
-      btn.disabled = true;
-      btn.textContent = 'Kaydediliyor...';
-
-      try {
-        if (id) {
-          const { error } = await sb.from('workouts').update(payload).eq('id', id);
-          if (error) throw error;
-          showToast('Hareket güncellendi.');
-        } else {
-          const { error } = await sb.from('workouts').insert([payload]);
-          if (error) throw error;
-          showToast('Hareket eklendi.');
-        }
-        selectedDay = payload.day_name;
-        closeExerciseModal();
-        await fetchWorkouts();
-      } catch (err) {
-        showToast('Hata: ' + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Kaydet';
-      }
-    }
-
-    async function deleteExercise(id) {
-      if (!confirm('Bu hareketi silmek istediğine emin misin?')) return;
-      const { error } = await sb.from('workouts').delete().eq('id', id);
-      if (error) {
-        showToast('Silinemedi: ' + error.message, 'error');
-      } else {
-        showToast('Hareket silindi.');
-        await fetchWorkouts();
-      }
-    }
-
-    // ÖRNEK PROGRAM YÜKLEME
-    async function loadSampleProgram() {
-      const btn = document.getElementById('sample-btn');
-      btn.disabled = true;
-      btn.textContent = 'Yükleniyor...';
-
-      const sampleData = [
-        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Bench Press', sets: 4, reps: '8-10', weight: '60 kg', notes: 'Göğse kontrollü indir' },
-        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', weight: '20 kg', notes: 'Üst göğüs odaklı' },
-        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Lateral Raise', sets: 4, reps: '12-15', weight: '10 kg', notes: 'Dirsekler hafif kırık' },
-        { day_name: '1. Gün - İtiş (Push)', exercise_name: 'Triceps Rope Pushdown', sets: 3, reps: '12-15', weight: '25 kg', notes: 'Altta 1 sn sıkıştır' },
-        { day_name: '2. Gün - Çekiş (Pull)', exercise_name: 'Lat Pulldown', sets: 4, reps: '10-12', weight: '55 kg', notes: 'Göğse doğru çek' },
-        { day_name: '2. Gün - Çekiş (Pull)', exercise_name: 'Barbell Row', sets: 4, reps: '8-10', weight: '50 kg', notes: 'Bel düz' },
-        { day_name: '2. Gün - Çekiş (Pull)', exercise_name: 'Barbell Biceps Curl', sets: 3, reps: '10-12', weight: '25 kg', notes: 'Sallanmadan' },
-        { day_name: '3. Gün - Bacak (Legs)', exercise_name: 'Squat', sets: 4, reps: '8-10', weight: '70 kg', notes: 'Tam derinlik' },
-        { day_name: '3. Gün - Bacak (Legs)', exercise_name: 'Romanian Deadlift', sets: 3, reps: '10-12', weight: '60 kg', notes: 'Arka bacak esnemesi' },
-        { day_name: '3. Gün - Bacak (Legs)', exercise_name: 'Leg Extension', sets: 3, reps: '12-15', weight: '40 kg', notes: '' }
-      ];
-
-      const { error } = await sb.from('workouts').insert(sampleData);
-      if (error) {
-        showToast('Hata: ' + error.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Örnek Program Yükle (PPL)';
-      } else {
-        showToast('Örnek program yüklendi!');
-        await fetchWorkouts();
-      }
-    }
-
-    // DİNLENME KRONOMETRESİ
-    let timerInterval = null;
-    let remainingSeconds = 90;
-
-    function toggleTimerModal() {
-      document.getElementById('timer-modal').classList.toggle('hidden');
-    }
-
-    function updateTimerUI() {
-      const m = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
-      const s = String(remainingSeconds % 60).padStart(2, '0');
-      const formatted = `${m}:${s}`;
-      document.getElementById('timer-display').textContent = formatted;
-      document.getElementById('mini-timer-text').textContent = timerInterval ? formatted : 'Sayaç';
-    }
-
-    function startTimer(seconds) {
-      clearInterval(timerInterval);
-      remainingSeconds = seconds;
-      updateTimerUI();
-      timerInterval = setInterval(() => {
-        remainingSeconds--;
-        updateTimerUI();
-        if (remainingSeconds <= 0) {
-          clearInterval(timerInterval);
-          timerInterval = null;
-          updateTimerUI();
-          showToast('Dinlenme süresi doldu! Yeni sete geç.');
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        }
-      }, 1000);
-    }
-
-    function stopTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      remainingSeconds = 90;
-      updateTimerUI();
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    }
-
-    init();
-  </script>
-</body>
-</html>
+      <button class="icon-btn" id
